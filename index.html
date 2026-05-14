@@ -160,6 +160,21 @@
 
   p a:hover { color: var(--accent); }
 
+  .detail-list {
+    margin: 12px 0 0 20px;
+    color: var(--text-secondary);
+  }
+
+  .detail-list li {
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+
+  .detail-list strong {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
   /* — Problem cards — */
   .problem-grid {
     display: grid;
@@ -517,6 +532,13 @@ classDiagram
       </div>
       <p class="diagram-caption">Downstream analysis jobs only run after the baseline qualification artifact clears.</p>
     </div>
+
+    <h3>Why we materialized Parquet</h3>
+    <ul class="detail-list">
+      <li><strong>Cheaper downstream I/O:</strong> raw <code>.xlsx</code> parsing was expensive, repetitive, and full of workbook-level fluff we did not care about once a job had been understood, so after a successful run the orchestrator converted only the necessary columns into Parquet.</li>
+      <li><strong>Column-oriented reads:</strong> because Parquet is built for efficient storage and retrieval, downstream routines could touch only the fields they needed instead of reparsing whole spreadsheets every time.</li>
+      <li><strong>Cleaner plotting path:</strong> our delivery layer already relied on Apache Arrow, another columnar format optimized for fast scans and low-overhead transport, so serving processed series from Parquet into Arrow was a much cleaner route than going back to raw spreadsheets for every plot.</li>
+    </ul>
   </div>
 
   <!-- ─── Phase 3 ─── -->
@@ -533,7 +555,7 @@ classDiagram
     <p>Simple derivatives were too brittle, because local slope changes fired constantly even when the underlying profile was behaving normally. We also tried <a href="https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter" target="_blank" rel="noopener noreferrer">Savitzky-Golay smoothing</a>, which helped with denoising but still did not reliably separate nuisance spikes from the events that actually mattered.</p>
 
     <h3>The heuristic that worked</h3>
-    <p>The approach that finally held up was a layered heuristic. We first measured deviation inside a rolling window and flagged only windows whose deviation crossed a tuned threshold. Those candidate spike windows were then projected back onto the original x/y coordinates and clustered with <a href="https://en.wikipedia.org/wiki/DBSCAN" target="_blank" rel="noopener noreferrer"><code>DBSCAN</code></a>, with careful tuning of <code>eps</code> and <code>minPts</code>. Dense regions of candidates usually corresponded to recurring spike behavior or measurement artifacts; candidates that failed to join any cluster were treated as the real anomalies worth escalating.</p>
+    <p>The approach that finally held up was a layered heuristic. We first measured deviation inside a rolling window and flagged only windows whose deviation crossed a tuned threshold. Those candidate spike windows were then embedded into a 3D feature space built from the original trace axes plus the deviation signal, and clustered with <a href="https://en.wikipedia.org/wiki/DBSCAN" target="_blank" rel="noopener noreferrer"><code>DBSCAN</code></a>, with careful tuning of <code>eps</code> and <code>minPts</code>. Dense regions of candidates usually corresponded to recurring spike behavior or measurement artifacts; candidates that failed to join any cluster were treated as the real anomalies worth escalating.</p>
 
     <div class="diagram-wrap">
       <div class="mermaid">
@@ -542,7 +564,7 @@ flowchart TD
     Window["Rolling-window<br/>deviation score"]
     Gate{"Deviation above<br/>threshold?"}
     Candidates["Candidate windows"]
-    Project["Project candidates back to<br/>original x/y coordinates"]
+    Embed["Embed in 3D space<br/>x, y, deviation"]
     Cluster["DBSCAN clustering<br/>tune eps + minPts"]
     Dense["Clustered candidates<br/>recurring spike regions"]
     True["Unclustered candidates<br/>true anomalies"]
@@ -550,11 +572,11 @@ flowchart TD
 
     Raw --> Window --> Gate
     Gate -- No --> Normal
-    Gate -- Yes --> Candidates --> Project --> Cluster
+    Gate -- Yes --> Candidates --> Embed --> Cluster
     Cluster --> Dense
     Cluster --> True
       </div>
-      <p class="diagram-caption">Rolling-window deviation produced anomaly candidates; DBSCAN then separated recurring spike regions from truly isolated events.</p>
+      <p class="diagram-caption">Rolling-window deviation produced anomaly candidates; DBSCAN in 3D then separated recurring spike regions from truly isolated events.</p>
     </div>
   </div>
 
@@ -610,6 +632,10 @@ classDiagram
 
     <p>The final evolution gave researchers the ability to query their data in plain English. We built an AI agent directly into the React frontend, backed by a <strong>Dual-Loop pipeline</strong> with a self-healing <code>ActionReconciler</code> to prevent hallucinated tool calls.</p>
 
+    <p>We also benchmarked the LLM providers and models we had access to before deciding where each one fit. A separate pytest-based NL2SQL harness ran structured query tasks across multiple models, checking not just whether they produced something plausible, but whether they returned parseable JSON, generated executable SQL, and matched validated reference behavior. The evaluation was extensive, measured both accuracy and response time, and clear winners emerged.</p>
+
+    <p>That benchmarking changed how we used models in practice. Faster and cheaper models made sense for narrow classification work, while stronger models were reserved for heavier generation tasks. Our validation was also intentionally a little fuzzy in the right places: if a model returned a superset of columns but the row count and row values still matched the correct answer, we treated that as acceptable because the information was still right. Just as importantly, the benchmark suite made failure modes visible early: some models rambled instead of returning structured JSON, some timed out, and some generated SQL that looked reasonable but failed execution or result validation.</p>
+
     <p>The reconciler detects mismatches between the intent classifier's output and the main generator's proposed actions, then runs a targeted healing pass before the response reaches the user, significantly reducing erroneous tool invocations in production.</p>
 
     <div class="diagram-wrap">
@@ -662,6 +688,10 @@ classDiagram
       <div class="takeaway-card">
         <div class="t-title">Heuristics over naive calculus</div>
         <p class="t-desc">Rolling-window deviation plus DBSCAN worked better than simple derivatives when the goal was separating recurring spikes from true anomalies.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="t-title">Benchmark before betting</div>
+        <p class="t-desc">A pytest-based benchmark suite told us which models were dependable for classification, generation, and NL2SQL, and which ones only looked convincing.</p>
       </div>
       <div class="takeaway-card">
         <div class="t-title">Self-healing agents</div>
