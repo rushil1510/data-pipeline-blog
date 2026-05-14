@@ -152,6 +152,14 @@
 
   p:last-child { margin-bottom: 0; }
 
+  p a {
+    color: var(--accent-mid);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+
+  p a:hover { color: var(--accent); }
+
   /* — Problem cards — */
   .problem-grid {
     display: grid;
@@ -406,7 +414,7 @@ flowchart TD
         DjangoAPI -->|"Manages"| PG1
     end
     subgraph Pipeline[File Processing Pipeline]
-        LegacyOrch["Legacy Orchestrator\nregex discovery + job builder"]
+        LegacyOrch["Orchestrator\nregex discovery + job builder"]
         SQLiteIdx["SQLite Job Ledger"]
         PriorityQ["Priority Queue\nrecency x class weight"]
         WorkerPool["ProcessPoolExecutor\nparallel workers"]
@@ -469,13 +477,13 @@ graph LR
 
     <div class="phase-banner">
       <span class="phase-num">Phase 02</span>
-      <h2 class="phase-title">Legacy orchestrator: Making the file lake workable</h2>
+      <h2 class="phase-title">Orchestrator: Making the file lake workable</h2>
     </div>
 
     <p>To process the <code>.xlsx</code> files sitting in an offline synced Google Drive, we enforced a regex-based directory tree and a strict naming template for each analysis type. That turned a shapeless file dump into something the pipeline could actually search, classify, and reason about.</p>
 
     <h3>Idempotency by construction</h3>
-    <p>The legacy orchestrator used an SQLite <code>job_status</code> table as a ledger of every discovered file path, job type, and latest outcome. Each run first loaded the set of already-successful jobs, pulled a map of the unit IDs researchers were actively tracking, searched indexed paths for candidate files, and then filtered out any path that had already been marked successful for that job type. Safe reruns stopped being a convention and became the default behavior.</p>
+    <p>The orchestrator used an SQLite <code>job_status</code> table as a ledger of every discovered file path, job type, and latest outcome. Each run first loaded the set of already-successful jobs, pulled a map of the unit IDs researchers were actively tracking, searched indexed paths for candidate files, and then filtered out any path that had already been marked successful for that job type. Safe reruns stopped being a convention and became the default behavior.</p>
 
     <h3>Failure handling and scheduling</h3>
     <p>The same ledger handled failure modes. Every attempt was upserted back into <code>job_status</code> with its status and logs, warnings were raised for misplaced files, and failed jobs remained eligible for later reprocessing instead of silently disappearing. A baseline qualification run acted as a <strong>gateway</strong>: downstream analysis jobs for a unit were only queued after that first qualification artifact was marked <code>SUCCESSFUL</code>.</p>
@@ -522,27 +530,25 @@ classDiagram
 
     <p>Most of the time-series processing itself was classified business logic, but one technical problem was reusable: distinguishing meaningless spikes from true anomalies in traces whose ideal shape should have been mostly monotonic.</p>
 
-    <p>Simple derivatives were too brittle, because local slope changes fired constantly even when the underlying profile was behaving normally. We also tried Savitzky-Golay smoothing, which helped with denoising but still did not reliably separate nuisance spikes from the events that actually mattered.</p>
+    <p>Simple derivatives were too brittle, because local slope changes fired constantly even when the underlying profile was behaving normally. We also tried <a href="https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter" target="_blank" rel="noopener noreferrer">Savitzky-Golay smoothing</a>, which helped with denoising but still did not reliably separate nuisance spikes from the events that actually mattered.</p>
 
     <h3>The heuristic that worked</h3>
-    <p>The approach that finally held up was a layered heuristic. We first measured deviation inside a rolling window and flagged only windows whose deviation crossed a tuned threshold. Those candidate spike windows were then projected back onto the original x/y coordinates and clustered with <code>DBSCAN</code>, with careful tuning of <code>eps</code> and <code>minPts</code>. Dense regions of candidates usually corresponded to recurring spike behavior or measurement artifacts; candidates that failed to join any cluster were treated as the real anomalies worth escalating.</p>
+    <p>The approach that finally held up was a layered heuristic. We first measured deviation inside a rolling window and flagged only windows whose deviation crossed a tuned threshold. Those candidate spike windows were then projected back onto the original x/y coordinates and clustered with <a href="https://en.wikipedia.org/wiki/DBSCAN" target="_blank" rel="noopener noreferrer"><code>DBSCAN</code></a>, with careful tuning of <code>eps</code> and <code>minPts</code>. Dense regions of candidates usually corresponded to recurring spike behavior or measurement artifacts; candidates that failed to join any cluster were treated as the real anomalies worth escalating.</p>
 
     <div class="diagram-wrap">
       <div class="mermaid">
-flowchart LR
+flowchart TD
     Raw["Raw time-series trace"]
-    Deriv["Naive derivatives<br/>too sensitive"]
-    SG["Savitzky-Golay smoothing<br/>helpful, but insufficient"]
-    Window["Rolling-window deviation score"]
-    Gate{"Deviation crosses<br/>threshold?"}
-    Candidates["Candidate spike windows"]
-    Project["Map candidates back to<br/>original x/y coordinates"]
+    Window["Rolling-window<br/>deviation score"]
+    Gate{"Deviation above<br/>threshold?"}
+    Candidates["Candidate windows"]
+    Project["Project candidates back to<br/>original x/y coordinates"]
     Cluster["DBSCAN clustering<br/>tune eps + minPts"]
-    Dense["Dense candidate regions<br/>recurring spike behavior"]
+    Dense["Clustered candidates<br/>recurring spike regions"]
     True["Unclustered candidates<br/>true anomalies"]
     Normal["Treat as normal"]
 
-    Raw --> Deriv --> SG --> Window --> Gate
+    Raw --> Window --> Gate
     Gate -- No --> Normal
     Gate -- Yes --> Candidates --> Project --> Cluster
     Cluster --> Dense
