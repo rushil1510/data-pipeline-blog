@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Hardware R&D Data Platform — Rushil Mital</title>
+<title>Building an R&D Data Platform — Rushil Mital</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -340,9 +340,8 @@
 <div class="page-wrap">
 
   <header>
-    <p class="eyebrow">Case Study &nbsp;·&nbsp; OLA Electric, Bengaluru</p>
     <h1>Architecting a next-generation hardware R&D data platform</h1>
-    <p class="subtitle">How we moved a hardware manufacturing R&D centre from manual spreadsheets to a fully automated, AI-augmented data ecosystem — without replacing a single spreadsheet.</p>
+    <p class="subtitle">How we moved a manufacturing centric R&D centre from manual spreadsheets to a fully automated, AI-augmented data ecosystem, without replacing a single spreadsheet.</p>
     <div class="meta-row">
       <span class="tag">Django · PostgreSQL</span>
       <span class="tag">Celery · Redis</span>
@@ -357,7 +356,7 @@
   <div class="section">
     <div class="section-label">01 <span>the problem</span></div>
     <h2>Operating in the dark ages of data management</h2>
-    <p>Before this platform, every critical manufacturing decision flowed through a tangle of Google Sheets, offline Excel dumps, and manual chart-plotting sessions. The centre produced enormous volumes of process data at each manufacturing stage — but none of it was searchable, connected, or versioned.</p>
+    <p>Before this platform, every critical manufacturing decision flowed through a tangle of Google Sheets, offline Excel dumps, and manual chart-plotting sessions. The centre produced enormous volumes of process data at each manufacturing stage, but none of it was searchable, connected, or versioned.</p>
 
     <div class="problem-grid">
       <div class="problem-card">
@@ -368,12 +367,12 @@
       <div class="problem-card">
         <div class="num">02</div>
         <div class="title">Data lake chaos</div>
-        <p class="desc">Time-series test data from machines was exported as <code>.xlsx</code> and synced to an offline Google Drive — no schema, no indexing.</p>
+        <p class="desc">Time-series test data from machines was exported as <code>.xlsx</code> and synced to an offline Google Drive: no schema, no indexing, no structure to directories.</p>
       </div>
       <div class="problem-card">
         <div class="num">03</div>
         <div class="title">Manual analysis loop</div>
-        <p class="desc">Analysts manually opened Excel files and plotted Performance vs. Time graphs for every business-critical decision.</p>
+        <p class="desc">Analysts manually opened <strong>hundreds</strong>Excel files and plotted time-series graphs for every business-critical decision.</p>
       </div>
       <div class="problem-card">
         <div class="num">04</div>
@@ -387,7 +386,7 @@
   <div class="section">
     <div class="section-label">02 <span>architecture overview</span></div>
     <h2>The complete platform ecosystem</h2>
-    <p>Data flows from two immovable sources — Google Sheets and Google Drive — through ingestion services into a PostgreSQL backbone, then out through a Node.js layer to a React frontend and an AI chat agent.</p>
+    <p>Data flows from two immovable sources (Google Sheets and Google Drive) through ingestion services into a PostgreSQL backbone, then out through a Node.js layer to a React frontend and an AI chat agent.</p>
 
     <div class="diagram-wrap">
       <div class="mermaid">
@@ -445,17 +444,14 @@ flowchart TD
     <div class="diagram-wrap">
       <div class="mermaid">
 graph LR
-    MaterialPrep --> Deposition
-    Deposition --> Compression
-    Compression --> Sizing
-    Sizing --> Assembly
-    Assembly --> Integration
-    Integration --> ChemProcessing
-    ChemProcessing --> FinalValidation
+    MaterialPrep -->Assembly
+    Assembly --> Testing
+    Testing --> Validation
       </div>
       <p class="diagram-caption">Sequential manufacturing stages, modelled as a directed acyclic graph to capture splits and merges.</p>
     </div>
   </div>
+ <p> <em> Note: The actual manufacturing stages have not been represented here.</em> </p>
 
   <!-- ─── Phase 2 ─── -->
   <div class="section">
@@ -586,7 +582,7 @@ classDiagram
 
     <p>The final evolution gave researchers the ability to query their data in plain English. We built an AI agent directly into the React frontend, backed by a <strong>Dual-Loop pipeline</strong> with a self-healing <code>ActionReconciler</code> to prevent hallucinated tool calls.</p>
 
-    <p>The reconciler detects mismatches between the intent classifier's output and the main generator's proposed actions, then runs a targeted healing pass before the response reaches the user — significantly reducing erroneous tool invocations in production.</p>
+    <p>The reconciler detects mismatches between the intent classifier's output and the main generator's proposed actions, then runs a targeted healing pass before the response reaches the user, significantly reducing erroneous tool invocations in production.</p>
 
     <div class="diagram-wrap">
       <div class="mermaid">
@@ -637,7 +633,7 @@ classDiagram
       </div>
       <div class="takeaway-card">
         <div class="t-title">Self-healing agents</div>
-        <p class="t-desc">The Action Reconciler pattern — classify intent, generate, then verify — dramatically reduced hallucinated tool calls at the LLM layer.</p>
+        <p class="t-desc">The Action Reconciler pattern: classify intent, generate, then verify; dramatically reduced hallucinated tool calls at the LLM layer.</p>
       </div>
     </div>
   </div>
