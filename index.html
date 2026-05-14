@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hardware R&D Data Platform — Rushil Mital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F9F7F3;
+    --surface: #FFFFFF;
+    --border: #E5E1D8;
+    --border-mid: #CCC8BF;
+    --text-primary: #1A1816;
+    --text-secondary: #5C574E;
+    --text-muted: #8C877D;
+    --accent: #1A3A2A;
+    --accent-soft: #EAF0EC;
+    --accent-mid: #3B6D4A;
+    --mono-bg: #F2F0EB;
+    --tag-bg: #EAF0EC;
+    --tag-text: #2A5538;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Geist', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* — Layout — */
+  .page-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* — Header — */
+  header {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 64px;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-mid);
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'Literata', serif;
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+  }
+
+  .subtitle {
+    font-size: 17px;
+    color: var(--text-secondary);
+    font-weight: 300;
+    max-width: 600px;
+    line-height: 1.65;
+    margin-bottom: 28px;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    letter-spacing: 0.04em;
+  }
+
+  /* — Sections — */
+  .section {
+    margin-bottom: 72px;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label span {
+    font-size: 13px;
+    color: var(--border-mid);
+    font-family: 'Literata', serif;
+    font-style: italic;
+  }
+
+  h2 {
+    font-family: 'Literata', serif;
+    font-size: 24px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin-bottom: 14px;
+    color: var(--text-primary);
+  }
+
+  h3 {
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--text-secondary);
+    margin: 36px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  p {
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    font-size: 15.5px;
+  }
+
+  p:last-child { margin-bottom: 0; }
+
+  /* — Problem cards — */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 28px 0;
+  }
+
+  .problem-card {
+    background: var(--surface);
+    padding: 20px 22px;
+  }
+
+  .problem-card .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .problem-card .title {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .problem-card .desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* — Phase banner — */
+  .phase-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent-mid);
+    border-radius: 0 8px 8px 0;
+    margin: 40px 0 24px;
+  }
+
+  .phase-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-mid);
+    white-space: nowrap;
+  }
+
+  .phase-title {
+    font-family: 'Literata', serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  /* — Mermaid diagrams — */
+  .diagram-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 20px;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+
+  .diagram-caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  .mermaid {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* — Inline highlight — */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--mono-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--text-primary);
+  }
+
+  /* — Takeaway cards — */
+  .takeaway-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .takeaway-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+
+  .takeaway-card .icon {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .takeaway-card .t-title {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+
+  .takeaway-card .t-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* — Footer — */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0 60px;
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  footer .name {
+    font-family: 'Literata', serif;
+    font-size: 15px;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  footer .links {
+    display: flex;
+    gap: 20px;
+  }
+
+  footer a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.15s;
+  }
+
+  footer a:hover { color: var(--accent-mid); }
+
+  /* — Divider — */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 48px 0 40px; }
+    .phase-banner { flex-direction: column; align-items: flex-start; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <header>
+    <p class="eyebrow">Case Study &nbsp;·&nbsp; OLA Electric, Bengaluru</p>
+    <h1>Architecting a next-generation hardware R&D data platform</h1>
+    <p class="subtitle">How we moved a hardware manufacturing R&D centre from manual spreadsheets to a fully automated, AI-augmented data ecosystem — without replacing a single spreadsheet.</p>
+    <div class="meta-row">
+      <span class="tag">Django · PostgreSQL</span>
+      <span class="tag">Celery · Redis</span>
+      <span class="tag">React · Express</span>
+      <span class="tag">Apache Arrow</span>
+      <span class="tag">NL2SQL · LLM Agents</span>
+      <span class="tag">Google Drive API</span>
+    </div>
+  </header>
+
+  <!-- ─── Problem ─── -->
+  <div class="section">
+    <div class="section-label">01 <span>the problem</span></div>
+    <h2>Operating in the dark ages of data management</h2>
+    <p>Before this platform, every critical manufacturing decision flowed through a tangle of Google Sheets, offline Excel dumps, and manual chart-plotting sessions. The centre produced enormous volumes of process data at each manufacturing stage — but none of it was searchable, connected, or versioned.</p>
+
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="num">01</div>
+        <div class="title">Google Sheets dependency</div>
+        <p class="desc">Process parameters for every manufacturing stage lived in unstructured, manually-entered spreadsheets with no versioning or validation.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">02</div>
+        <div class="title">Data lake chaos</div>
+        <p class="desc">Time-series test data from machines was exported as <code>.xlsx</code> and synced to an offline Google Drive — no schema, no indexing.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">03</div>
+        <div class="title">Manual analysis loop</div>
+        <p class="desc">Analysts manually opened Excel files and plotted Performance vs. Time graphs for every business-critical decision.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">04</div>
+        <div class="title">Organizational constraints</div>
+        <p class="desc">Proposals to migrate off Sheets or use direct network drives met consistent resistance. The platform had to work <em>around</em> the existing tools.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Architecture overview ─── -->
+  <div class="section">
+    <div class="section-label">02 <span>architecture overview</span></div>
+    <h2>The complete platform ecosystem</h2>
+    <p>Data flows from two immovable sources — Google Sheets and Google Drive — through ingestion services into a PostgreSQL backbone, then out through a Node.js layer to a React frontend and an AI chat agent.</p>
+
+    <div class="diagram-wrap">
+      <div class="mermaid">
+flowchart TD
+    subgraph DataSources[Data Sources]
+        GS["Google Sheets"]
+        GD["Google Drive"]
+    end
+    subgraph CoreBackend[Core Database and ORM]
+        GSPusher["Google Sheet Pusher"]
+        PG1["PostgreSQL"]
+        DjangoAPI["Django Backend API"]
+        GS -->|"Polling Ingestion"| GSPusher
+        GSPusher --> PG1
+        DjangoAPI -->|"Manages"| PG1
+    end
+    subgraph Pipeline[Background Pipeline]
+        TaskRouter["Celery TaskRouter"]
+        WorkerQ["Worker Queues"]
+        GD -->|"File Ingestion"| TaskRouter
+        TaskRouter --> WorkerQ
+        WorkerQ -->|"Updates Status"| PG1
+    end
+    subgraph WebBackend[Node.js Services]
+        ExpressServer["Express Server"]
+        Routes["API Routes"]
+        DjangoAPI -->|"REST API"| ExpressServer
+        ExpressServer --> Routes
+    end
+    subgraph Frontend[User Interfaces]
+        ReactDash["React Dashboard"]
+        AIAgent["AI Chat Agent"]
+        Routes -->|"Arrow IPC / JSON"| ReactDash
+        Routes -->|"JSON Payloads"| AIAgent
+    end
+      </div>
+      <p class="diagram-caption">Data flow: polling ingestion into PostgreSQL, managed by Django, with Celery for time-series background processing, and Express routing REST data to React and the AI agent.</p>
+    </div>
+  </div>
+
+  <!-- ─── Phase 1 ─── -->
+  <div class="section">
+    <div class="section-label">03 <span>phase 1</span></div>
+
+    <div class="phase-banner">
+      <span class="phase-num">Phase 01</span>
+      <h2 class="phase-title">The foundation — manufacturing lineage DAG</h2>
+    </div>
+
+    <p>Since replacing Google Sheets wasn't an option, we built a synchronisation engine instead. Every few hours, a <strong>Google Sheet Pusher</strong> script downloads CSV snapshots, hashes them against the stored version, and polls only the changed rows into PostgreSQL.</p>
+
+    <p>The core schema models every manufacturing stage as its own table, all inheriting from a shared <code>BaseProcessModel</code>. Because hardware units are born from splitting and combining materials, the data structure is a true DAG — a <code>LineageEdge</code> table connects nodes across stages.</p>
+
+    <h3>Manufacturing lineage graph</h3>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+graph LR
+    MaterialPrep --> Deposition
+    Deposition --> Compression
+    Compression --> Sizing
+    Sizing --> Assembly
+    Assembly --> Integration
+    Integration --> ChemProcessing
+    ChemProcessing --> FinalValidation
+      </div>
+      <p class="diagram-caption">Sequential manufacturing stages, modelled as a directed acyclic graph to capture splits and merges.</p>
+    </div>
+  </div>
+
+  <!-- ─── Phase 2 ─── -->
+  <div class="section">
+    <div class="section-label">04 <span>phase 2</span></div>
+
+    <div class="phase-banner">
+      <span class="phase-num">Phase 02</span>
+      <h2 class="phase-title">Orchestrator engine — taming the Drive</h2>
+    </div>
+
+    <p>To process the physical <code>.xlsx</code> files in Google Drive, we enforced a regex-based file system tree and built an idempotent pipeline using an SQLite job index as the single source of truth.</p>
+
+    <p>The "Final Validation" cycle acts as a <strong>gateway</strong>: downstream test jobs for a unit are only queued after their validation job is marked <code>SUCCESSFUL</code>. Jobs aren't processed FIFO — a weighted priority queue using <code>heapq</code> sorts by <code>recency_score × job_class_weight</code>, ensuring the newest and most critical tests run first.</p>
+
+    <h3>Job dependency model</h3>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+classDiagram
+    class BaseJob {
+        +unit_code
+        +job_type
+        +status
+        +run()
+    }
+    class ValidationJob { +file_pattern }
+    class InitialTestJob { +job_type }
+    class NominalTestJob { +job_type }
+    class StressTestJob { +job_type }
+    class LifeCycleJob { +job_type }
+    BaseJob <|-- ValidationJob
+    BaseJob <|-- InitialTestJob
+    BaseJob <|-- NominalTestJob
+    BaseJob <|-- StressTestJob
+    BaseJob <|-- LifeCycleJob
+    ValidationJob <.. InitialTestJob : depends on
+    ValidationJob <.. NominalTestJob : depends on
+    ValidationJob <.. StressTestJob : depends on
+    ValidationJob <.. LifeCycleJob : depends on
+      </div>
+      <p class="diagram-caption">Downstream test jobs only run after the validation gateway clears.</p>
+    </div>
+  </div>
+
+  <!-- ─── Phase 3 ─── -->
+  <div class="section">
+    <div class="section-label">05 <span>phase 3</span></div>
+
+    <div class="phase-banner">
+      <span class="phase-num">Phase 03</span>
+      <h2 class="phase-title">Scaling with Celery — distributed testing pipeline</h2>
+    </div>
+
+    <p>To gain proper observability, distinct worker nodes, and retry semantics, we migrated the legacy SQLite engine into a full Django + Celery application backed by PostgreSQL. Celery Beat triggers an ingestion task that queries the external API, checks the path index, creates job instances, and dispatches them through a <code>TaskRouter</code> to the appropriate worker queue.</p>
+
+    <div class="diagram-wrap">
+      <div class="mermaid">
+classDiagram
+    class CeleryBeat { +run_ingestion() }
+    class RunIngestionTask {
+        +query_external_api()
+        +query_PathEntry_index()
+        +create_Job_instances()
+        +dispatch()
+    }
+    class TaskRouter { +route_for_task() }
+    class ProcessJobTask {
+        +job_id
+        +run_solver()
+        +update_status_in_postgres()
+    }
+    CeleryBeat --> RunIngestionTask : triggers
+    RunIngestionTask --> TaskRouter : delays process_job
+    TaskRouter --> ProcessJobTask : routes to queue
+      </div>
+      <p class="diagram-caption">Celery task architecture with typed routing per job class.</p>
+    </div>
+  </div>
+
+  <!-- ─── Phase 4 ─── -->
+  <div class="section">
+    <div class="section-label">06 <span>phase 4</span></div>
+
+    <div class="phase-banner">
+      <span class="phase-num">Phase 04</span>
+      <h2 class="phase-title">Presentation layer — React + Express</h2>
+    </div>
+
+    <p>With data ingested and files processed into Parquet/Arrow formats, we built a web interface to replace manual plotting. An Express.js backend acts as a high-performance REST proxy and cache in front of Django, with a dedicated Python microservice that reads Parquet files and returns Arrow IPC data as Base64.</p>
+
+    <p>To prevent the UI from freezing when rendering charts with millions of data points, we implemented a <strong>Web Worker architecture</strong>: the worker receives Arrow Base64, decodes it, parses the Apache Arrow binary, transforms it into Plotly-ready JSON, and posts the traces back to the main thread — leaving the UI fully responsive throughout.</p>
+
+    <div class="diagram-wrap">
+      <div class="mermaid">
+classDiagram
+    class OverviewPage { +renders ScatterPlot carousel }
+    class ScatterPlot {
+        -projectDataCache
+        +fetchAndCache()
+        +renderPlotly()
+    }
+    class useDataHook {
+        +initWorker()
+        +sendBatchRequests()
+    }
+    class DataWorker {
+        +receive arrow_base64
+        +decode Base64
+        +parse Apache Arrow binary
+        +transform to Plotly JSON
+        +postMessage traces
+    }
+    OverviewPage --> ScatterPlot
+    ScatterPlot --> useDataHook
+    useDataHook --> DataWorker
+      </div>
+      <p class="diagram-caption">Web Worker pipeline keeps the main thread unblocked while processing million-point datasets.</p>
+    </div>
+  </div>
+
+  <!-- ─── Phase 5 ─── -->
+  <div class="section">
+    <div class="section-label">07 <span>phase 5</span></div>
+
+    <div class="phase-banner">
+      <span class="phase-num">Phase 05</span>
+      <h2 class="phase-title">Injecting AI — NL2SQL and chat agents</h2>
+    </div>
+
+    <p>The final evolution gave researchers the ability to query their data in plain English. We built an AI agent directly into the React frontend, backed by a <strong>Dual-Loop pipeline</strong> with a self-healing <code>ActionReconciler</code> to prevent hallucinated tool calls.</p>
+
+    <p>The reconciler detects mismatches between the intent classifier's output and the main generator's proposed actions, then runs a targeted healing pass before the response reaches the user — significantly reducing erroneous tool invocations in production.</p>
+
+    <div class="diagram-wrap">
+      <div class="mermaid">
+classDiagram
+    class ConversationState {
+        +currentUnit
+        +unitsDiscussed
+        +plotsShown
+    }
+    class IntentClassifier { +classifyIntent() }
+    class MainGenerator { +generate() }
+    class ActionReconciler {
+        +checkMismatch()
+        +healingPass()
+    }
+    class AnalyzeTableEndpoint {
+        +POST chat analysis
+        +orchestrates full pipeline
+    }
+    AnalyzeTableEndpoint --> IntentClassifier
+    AnalyzeTableEndpoint --> MainGenerator
+    AnalyzeTableEndpoint --> ActionReconciler
+      </div>
+      <p class="diagram-caption">Dual-loop AI pipeline: intent classification feeds into generation, with a reconciler catching hallucinated actions before they surface.</p>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ─── Takeaways ─── -->
+  <div class="section">
+    <div class="section-label">08 <span>takeaways</span></div>
+    <h2>Working with constraints, not against them</h2>
+    <p>The core lesson: immovable organizational constraints aren't blockers — they're the design spec. Every layer of this platform was engineered around a fixed reality rather than an ideal one.</p>
+
+    <div class="takeaway-grid">
+      <div class="takeaway-card">
+        <div class="t-title">Constraint-first design</div>
+        <p class="t-desc">Polling ingestors and idempotent file discoverers let us treat Sheets and Drive as append-only sources without ever touching them.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="t-title">Lineage as a first-class primitive</div>
+        <p class="t-desc">Modelling the manufacturing DAG explicitly in Postgres enabled traceability and cross-stage queries that were previously impossible.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="t-title">Progressive evolution</div>
+        <p class="t-desc">SQLite → Celery → PostgreSQL allowed the pipeline to grow from a cron script into a distributed system without a big-bang rewrite.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="t-title">Self-healing agents</div>
+        <p class="t-desc">The Action Reconciler pattern — classify intent, generate, then verify — dramatically reduced hallucinated tool calls at the LLM layer.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="name">Rushil Mital</span>
+    <div class="links">
+      <a href="https://github.com/rushilmital" target="_blank">GitHub</a>
+      <a href="https://linkedin.com/in/rushilmital" target="_blank">LinkedIn</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'neutral',
+    themeVariables: {
+      primaryColor: '#EAF0EC',
+      primaryTextColor: '#1A1816',
+      primaryBorderColor: '#3B6D4A',
+      lineColor: '#8C877D',
+      secondaryColor: '#F9F7F3',
+      tertiaryColor: '#F2F0EB',
+      fontSize: '13px',
+      fontFamily: 'Geist, sans-serif',
+    },
+    flowchart: { curve: 'basis', padding: 20 },
+    classDiagram: { useMaxWidth: true },
+  });
+</script>
+</body>
+</html>
