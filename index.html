@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Building an R&D Data Platform</title>
+<title>Building an R&amp;D Data Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -340,15 +340,17 @@
 <div class="page-wrap">
 
   <header>
-    <h1>Architecting a next-generation hardware R&D data platform</h1>
-    <p class="subtitle">How we moved a manufacturing centric R&D centre from manual spreadsheets to a fully automated, AI-augmented data ecosystem, without replacing a single spreadsheet.</p>
+    <h1>Architecting a next-generation hardware R&amp;D data platform</h1>
+    <p class="subtitle">How we moved an R&amp;D centre from manual spreadsheets and file dumps to an automated data platform, without replacing a single spreadsheet.</p>
     <div class="meta-row">
       <span class="tag">Django · PostgreSQL</span>
-      <span class="tag">Celery · Redis</span>
+      <span class="tag">SQLite · Priority Queues</span>
+      <span class="tag">ProcessPoolExecutor</span>
       <span class="tag">React · Express</span>
       <span class="tag">Apache Arrow</span>
+      <span class="tag">DBSCAN · Heuristics</span>
       <span class="tag">NL2SQL · LLM Agents</span>
-      <span class="tag">Google Drive API</span>
+      <span class="tag">Google Drive Sync</span>
     </div>
   </header>
 
@@ -356,13 +358,13 @@
   <div class="section">
     <div class="section-label">01 <span>the problem</span></div>
     <h2>Operating in the dark ages of data management</h2>
-    <p>Before this platform, every critical manufacturing decision flowed through a tangle of Google Sheets, offline Excel dumps, and manual chart-plotting sessions. The centre produced enormous volumes of process data at each manufacturing stage, but none of it was searchable, connected, or versioned.</p>
+    <p>Before this platform, every critical R&amp;D decision flowed through a tangle of Google Sheets, offline Excel dumps, and manual chart-plotting sessions. The centre produced enormous volumes of workflow data at every stage, but none of it was searchable, connected, or versioned.</p>
 
     <div class="problem-grid">
       <div class="problem-card">
         <div class="num">01</div>
         <div class="title">Google Sheets dependency</div>
-        <p class="desc">Process parameters for every manufacturing stage lived in unstructured, manually-entered spreadsheets with no versioning or validation.</p>
+        <p class="desc">Process parameters for every stage of work lived in unstructured, manually-entered spreadsheets with no versioning or validation.</p>
       </div>
       <div class="problem-card">
         <div class="num">02</div>
@@ -372,7 +374,7 @@
       <div class="problem-card">
         <div class="num">03</div>
         <div class="title">Manual analysis loop</div>
-        <p class="desc">Analysts manually opened <strong>hundreds</strong>Excel files and plotted time-series graphs for every business-critical decision.</p>
+        <p class="desc">Analysts manually opened <strong>hundreds</strong> of Excel files and plotted time-series graphs for every business-critical decision.</p>
       </div>
       <div class="problem-card">
         <div class="num">04</div>
@@ -386,7 +388,7 @@
   <div class="section">
     <div class="section-label">02 <span>architecture overview</span></div>
     <h2>The complete platform ecosystem</h2>
-    <p>Data flows from two immovable sources (Google Sheets and Google Drive) through ingestion services into a PostgreSQL backbone, then out through a Node.js layer to a React frontend and an AI chat agent.</p>
+    <p>Data flowed from two immovable sources, Google Sheets and a synced Google Drive, through a PostgreSQL backbone and a file-processing layer, then out through a Node.js layer to a React frontend and an AI chat agent.</p>
 
     <div class="diagram-wrap">
       <div class="mermaid">
@@ -403,12 +405,16 @@ flowchart TD
         GSPusher --> PG1
         DjangoAPI -->|"Manages"| PG1
     end
-    subgraph Pipeline[Background Pipeline]
-        TaskRouter["Celery TaskRouter"]
-        WorkerQ["Worker Queues"]
-        GD -->|"File Ingestion"| TaskRouter
-        TaskRouter --> WorkerQ
-        WorkerQ -->|"Updates Status"| PG1
+    subgraph Pipeline[File Processing Pipeline]
+        LegacyOrch["Legacy Orchestrator\nregex discovery + job builder"]
+        SQLiteIdx["SQLite Job Ledger"]
+        PriorityQ["Priority Queue\nrecency x class weight"]
+        WorkerPool["ProcessPoolExecutor\nparallel workers"]
+        GD -->|"Synced xlsx discovery"| LegacyOrch
+        LegacyOrch --> SQLiteIdx
+        LegacyOrch --> PriorityQ
+        PriorityQ --> WorkerPool
+        WorkerPool -->|"status + logs"| SQLiteIdx
     end
     subgraph WebBackend[Node.js Services]
         ExpressServer["Express Server"]
@@ -423,7 +429,7 @@ flowchart TD
         Routes -->|"JSON Payloads"| AIAgent
     end
       </div>
-      <p class="diagram-caption">Data flow: polling ingestion into PostgreSQL, managed by Django, with Celery for time-series background processing, and Express routing REST data to React and the AI agent.</p>
+      <p class="diagram-caption">Polling ingestion into PostgreSQL fed the metadata layer, while a production SQLite-backed orchestrator handled file discovery, priority scheduling, and parallel processing for time-series work.</p>
     </div>
   </div>
 
@@ -433,25 +439,29 @@ flowchart TD
 
     <div class="phase-banner">
       <span class="phase-num">Phase 01</span>
-      <h2 class="phase-title">The foundation: Manufacturing lineage DAG</h2>
+      <h2 class="phase-title">The foundation: Process lineage DAG</h2>
     </div>
 
-    <p>Since replacing Google Sheets wasn't an option, we built a synchronisation engine instead. Every few hours, a <strong>Google Sheet Pusher</strong> script downloads CSV snapshots, hashes them against the stored version, and polls only the changed rows into PostgreSQL.</p>
+    <p>Since replacing Google Sheets wasn't an option, we built a synchronisation engine instead. Every few hours, a <strong>Google Sheet Pusher</strong> script downloads fresh CSV snapshots, compares them against the previous version, and pushes only the delta into PostgreSQL.</p>
 
-    <p>The core schema models every manufacturing stage as its own table, all inheriting from a shared <code>BaseProcessModel</code>. Because hardware units are born from splitting and combining materials, the data structure is a true DAG : a <code>LineageEdge</code> table connects nodes across stages.</p>
+    <p>Idempotency started at ingestion time. We kept consecutive versions of each CSV, hashed both, and only when those hashes diverged did we compute the set of mismatching process IDs and send targeted updates through the Django API. If a snapshot was unchanged, the poll became a no-op. That made scheduled syncs safe to rerun and prevented spreadsheet churn from becoming redundant database writes.</p>
 
-    <h3>Manufacturing lineage graph</h3>
+    <p>The schema mirrored the real workflow without forcing researchers to change how they worked. Each stage got its own table inheriting from <code>BaseProcessModel</code>, regex rules enforced identifier consistency on the source sheets, and a <code>LineageEdge</code> table connected every stage into a queryable DAG that could handle both splits and merges.</p>
+
+    <h3>Process lineage graph</h3>
     <div class="diagram-wrap">
       <div class="mermaid">
 graph LR
-    MaterialPrep -->Assembly
-    Assembly --> Testing
-    Testing --> Validation
+    Intake --> Preparation
+    Preparation --> BranchA
+    Preparation --> BranchB
+    BranchA --> Assembly
+    BranchB --> Assembly
+    Assembly --> Qualification
       </div>
-      <p class="diagram-caption">Sequential manufacturing stages, modelled as a directed acyclic graph to capture splits and merges.</p>
+      <p class="diagram-caption">A simplified lineage view; the real graph spans more stages and explicitly models branch-and-merge relationships between units.</p>
     </div>
   </div>
- <p> <em> Note: The actual manufacturing stages have not been represented here.</em> </p>
 
   <!-- ─── Phase 2 ─── -->
   <div class="section">
@@ -459,12 +469,18 @@ graph LR
 
     <div class="phase-banner">
       <span class="phase-num">Phase 02</span>
-      <h2 class="phase-title">Orchestrator engine: Taming the Drive</h2>
+      <h2 class="phase-title">Legacy orchestrator: Making the file lake workable</h2>
     </div>
 
-    <p>To process the physical <code>.xlsx</code> files in Google Drive, we enforced a regex-based file system tree and built an idempotent pipeline using an SQLite job index as the single source of truth.</p>
+    <p>To process the <code>.xlsx</code> files sitting in an offline synced Google Drive, we enforced a regex-based directory tree and a strict naming template for each analysis type. That turned a shapeless file dump into something the pipeline could actually search, classify, and reason about.</p>
 
-    <p>The "Final Validation" cycle acts as a <strong>gateway</strong>: downstream test jobs for a unit are only queued after their validation job is marked <code>SUCCESSFUL</code>. Jobs aren't processed FIFO — a weighted priority queue using <code>heapq</code> sorts by <code>recency_score × job_class_weight</code>, ensuring the newest and most critical tests run first.</p>
+    <h3>Idempotency by construction</h3>
+    <p>The legacy orchestrator used an SQLite <code>job_status</code> table as a ledger of every discovered file path, job type, and latest outcome. Each run first loaded the set of already-successful jobs, pulled a map of the unit IDs researchers were actively tracking, searched indexed paths for candidate files, and then filtered out any path that had already been marked successful for that job type. Safe reruns stopped being a convention and became the default behavior.</p>
+
+    <h3>Failure handling and scheduling</h3>
+    <p>The same ledger handled failure modes. Every attempt was upserted back into <code>job_status</code> with its status and logs, warnings were raised for misplaced files, and failed jobs remained eligible for later reprocessing instead of silently disappearing. A baseline qualification run acted as a <strong>gateway</strong>: downstream analysis jobs for a unit were only queued after that first qualification artifact was marked <code>SUCCESSFUL</code>.</p>
+
+    <p>The other piece that made the system usable was prioritization. Jobs were not processed FIFO: a weighted <code>heapq</code> queue scored work as <code>recency_score × job_class_weight</code>, so newer and more decision-critical files rose to the top first. Once queued, independent jobs were fanned out through <code>ProcessPoolExecutor</code>, which let us scale throughput without breaking ordering guarantees inside the dependency chain.</p>
 
     <h3>Job dependency model</h3>
     <div class="diagram-wrap">
@@ -476,22 +492,22 @@ classDiagram
         +status
         +run()
     }
-    class ValidationJob { +file_pattern }
-    class InitialTestJob { +job_type }
-    class NominalTestJob { +job_type }
-    class StressTestJob { +job_type }
-    class LifeCycleJob { +job_type }
-    BaseJob <|-- ValidationJob
-    BaseJob <|-- InitialTestJob
-    BaseJob <|-- NominalTestJob
-    BaseJob <|-- StressTestJob
-    BaseJob <|-- LifeCycleJob
-    ValidationJob <.. InitialTestJob : depends on
-    ValidationJob <.. NominalTestJob : depends on
-    ValidationJob <.. StressTestJob : depends on
-    ValidationJob <.. LifeCycleJob : depends on
+    class QualificationJob { +file_pattern }
+    class InitialAnalysisJob { +job_type }
+    class ComparativeRunJob { +job_type }
+    class StressRunJob { +job_type }
+    class LongRunJob { +job_type }
+    BaseJob <|-- QualificationJob
+    BaseJob <|-- InitialAnalysisJob
+    BaseJob <|-- ComparativeRunJob
+    BaseJob <|-- StressRunJob
+    BaseJob <|-- LongRunJob
+    QualificationJob <.. InitialAnalysisJob : depends on
+    QualificationJob <.. ComparativeRunJob : depends on
+    QualificationJob <.. StressRunJob : depends on
+    QualificationJob <.. LongRunJob : depends on
       </div>
-      <p class="diagram-caption">Downstream test jobs only run after the validation gateway clears.</p>
+      <p class="diagram-caption">Downstream analysis jobs only run after the baseline qualification artifact clears.</p>
     </div>
   </div>
 
@@ -501,32 +517,38 @@ classDiagram
 
     <div class="phase-banner">
       <span class="phase-num">Phase 03</span>
-      <h2 class="phase-title">Scaling with Celery: Parallelized pipeline</h2>
+      <h2 class="phase-title">Signal cleanup: separating spikes from real anomalies</h2>
     </div>
 
-    <p>To gain proper observability, distinct worker nodes, and retry semantics, we migrated the legacy SQLite engine into a full Django + Celery application backed by PostgreSQL. Celery Beat triggers an ingestion task that queries the external API, checks the path index, creates job instances, and dispatches them through a <code>TaskRouter</code> to the appropriate worker queue.</p>
+    <p>Most of the time-series processing itself was classified business logic, but one technical problem was reusable: distinguishing meaningless spikes from true anomalies in traces whose ideal shape should have been mostly monotonic.</p>
+
+    <p>Simple derivatives were too brittle, because local slope changes fired constantly even when the underlying profile was behaving normally. We also tried Savitzky-Golay smoothing, which helped with denoising but still did not reliably separate nuisance spikes from the events that actually mattered.</p>
+
+    <h3>The heuristic that worked</h3>
+    <p>The approach that finally held up was a layered heuristic. We first measured deviation inside a rolling window and flagged only windows whose deviation crossed a tuned threshold. Those candidate spike windows were then projected back onto the original x/y coordinates and clustered with <code>DBSCAN</code>, with careful tuning of <code>eps</code> and <code>minPts</code>. Dense regions of candidates usually corresponded to recurring spike behavior or measurement artifacts; candidates that failed to join any cluster were treated as the real anomalies worth escalating.</p>
 
     <div class="diagram-wrap">
       <div class="mermaid">
-classDiagram
-    class CeleryBeat { +run_ingestion() }
-    class RunIngestionTask {
-        +query_external_api()
-        +query_PathEntry_index()
-        +create_Job_instances()
-        +dispatch()
-    }
-    class TaskRouter { +route_for_task() }
-    class ProcessJobTask {
-        +job_id
-        +run_solver()
-        +update_status_in_postgres()
-    }
-    CeleryBeat --> RunIngestionTask : triggers
-    RunIngestionTask --> TaskRouter : delays process_job
-    TaskRouter --> ProcessJobTask : routes to queue
+flowchart LR
+    Raw["Raw time-series trace"]
+    Deriv["Naive derivatives<br/>too sensitive"]
+    SG["Savitzky-Golay smoothing<br/>helpful, but insufficient"]
+    Window["Rolling-window deviation score"]
+    Gate{"Deviation crosses<br/>threshold?"}
+    Candidates["Candidate spike windows"]
+    Project["Map candidates back to<br/>original x/y coordinates"]
+    Cluster["DBSCAN clustering<br/>tune eps + minPts"]
+    Dense["Dense candidate regions<br/>recurring spike behavior"]
+    True["Unclustered candidates<br/>true anomalies"]
+    Normal["Treat as normal"]
+
+    Raw --> Deriv --> SG --> Window --> Gate
+    Gate -- No --> Normal
+    Gate -- Yes --> Candidates --> Project --> Cluster
+    Cluster --> Dense
+    Cluster --> True
       </div>
-      <p class="diagram-caption">Celery task architecture with typed routing per job class.</p>
+      <p class="diagram-caption">Rolling-window deviation produced anomaly candidates; DBSCAN then separated recurring spike regions from truly isolated events.</p>
     </div>
   </div>
 
@@ -541,7 +563,7 @@ classDiagram
 
     <p>With data ingested and files processed into Parquet/Arrow formats, we built a web interface to replace manual plotting. An Express.js backend acts as a high-performance REST proxy and cache in front of Django, with a dedicated Python microservice that reads Parquet files and returns Arrow IPC data as Base64.</p>
 
-    <p>To prevent the UI from freezing when rendering charts with millions of data points, we implemented a <strong>Web Worker architecture</strong>: the worker receives Arrow Base64, decodes it, parses the Apache Arrow binary, transforms it into Plotly-ready JSON, and posts the traces back to the main thread, leaving the UI fully responsive throughout.</p>
+    <p>To prevent the UI from freezing when rendering charts with millions of data points, we implemented a <strong>Web Worker architecture</strong>: the worker receives Arrow Base64, decodes it, parses the Apache Arrow binary, transforms it into Plotly-ready JSON, and posts the traces back to the main thread, leaving the UI fully responsive throughout. Session-level caches reduced repeat fetches, and defensive UI boundaries ensured that a bad plot or malformed payload degraded locally instead of crashing the whole experience.</p>
 
     <div class="diagram-wrap">
       <div class="mermaid">
@@ -621,15 +643,19 @@ classDiagram
     <div class="takeaway-grid">
       <div class="takeaway-card">
         <div class="t-title">Constraint-first design</div>
-        <p class="t-desc">Polling ingestors and idempotent file discoverers let us treat Sheets and Drive as append-only sources without ever touching them.</p>
+        <p class="t-desc">Hash-based CSV diffs and regex-constrained file discovery let us treat Sheets and Drive as pollable sources without forcing teams to abandon them.</p>
       </div>
       <div class="takeaway-card">
         <div class="t-title">Lineage as a first-class primitive</div>
-        <p class="t-desc">Modelling the manufacturing DAG explicitly in Postgres enabled traceability and cross-stage queries that were previously impossible.</p>
+        <p class="t-desc">Modelling the workflow DAG explicitly in Postgres enabled traceability and cross-stage queries that were previously impossible.</p>
       </div>
       <div class="takeaway-card">
-        <div class="t-title">Progressive evolution</div>
-        <p class="t-desc">SQLite → Celery → PostgreSQL allowed the pipeline to grow from a cron script into a distributed system without a big-bang rewrite.</p>
+        <div class="t-title">Priority over FIFO</div>
+        <p class="t-desc">A recency-weighted queue plus <code>ProcessPoolExecutor</code> kept the most urgent jobs moving first without sacrificing safe reruns.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="t-title">Heuristics over naive calculus</div>
+        <p class="t-desc">Rolling-window deviation plus DBSCAN worked better than simple derivatives when the goal was separating recurring spikes from true anomalies.</p>
       </div>
       <div class="takeaway-card">
         <div class="t-title">Self-healing agents</div>
