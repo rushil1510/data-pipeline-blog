@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Building an R&D Data Platform — Rushil Mital</title>
+<title>Building an R&D Data Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -433,12 +433,12 @@ flowchart TD
 
     <div class="phase-banner">
       <span class="phase-num">Phase 01</span>
-      <h2 class="phase-title">The foundation — manufacturing lineage DAG</h2>
+      <h2 class="phase-title">The foundation: Manufacturing lineage DAG</h2>
     </div>
 
     <p>Since replacing Google Sheets wasn't an option, we built a synchronisation engine instead. Every few hours, a <strong>Google Sheet Pusher</strong> script downloads CSV snapshots, hashes them against the stored version, and polls only the changed rows into PostgreSQL.</p>
 
-    <p>The core schema models every manufacturing stage as its own table, all inheriting from a shared <code>BaseProcessModel</code>. Because hardware units are born from splitting and combining materials, the data structure is a true DAG — a <code>LineageEdge</code> table connects nodes across stages.</p>
+    <p>The core schema models every manufacturing stage as its own table, all inheriting from a shared <code>BaseProcessModel</code>. Because hardware units are born from splitting and combining materials, the data structure is a true DAG : a <code>LineageEdge</code> table connects nodes across stages.</p>
 
     <h3>Manufacturing lineage graph</h3>
     <div class="diagram-wrap">
@@ -459,7 +459,7 @@ graph LR
 
     <div class="phase-banner">
       <span class="phase-num">Phase 02</span>
-      <h2 class="phase-title">Orchestrator engine — taming the Drive</h2>
+      <h2 class="phase-title">Orchestrator engine: Taming the Drive</h2>
     </div>
 
     <p>To process the physical <code>.xlsx</code> files in Google Drive, we enforced a regex-based file system tree and built an idempotent pipeline using an SQLite job index as the single source of truth.</p>
@@ -501,7 +501,7 @@ classDiagram
 
     <div class="phase-banner">
       <span class="phase-num">Phase 03</span>
-      <h2 class="phase-title">Scaling with Celery — distributed testing pipeline</h2>
+      <h2 class="phase-title">Scaling with Celery: Parallelized pipeline</h2>
     </div>
 
     <p>To gain proper observability, distinct worker nodes, and retry semantics, we migrated the legacy SQLite engine into a full Django + Celery application backed by PostgreSQL. Celery Beat triggers an ingestion task that queries the external API, checks the path index, creates job instances, and dispatches them through a <code>TaskRouter</code> to the appropriate worker queue.</p>
@@ -536,12 +536,12 @@ classDiagram
 
     <div class="phase-banner">
       <span class="phase-num">Phase 04</span>
-      <h2 class="phase-title">Presentation layer — React + Express</h2>
+      <h2 class="phase-title">Presentation layer: React + Express</h2>
     </div>
 
     <p>With data ingested and files processed into Parquet/Arrow formats, we built a web interface to replace manual plotting. An Express.js backend acts as a high-performance REST proxy and cache in front of Django, with a dedicated Python microservice that reads Parquet files and returns Arrow IPC data as Base64.</p>
 
-    <p>To prevent the UI from freezing when rendering charts with millions of data points, we implemented a <strong>Web Worker architecture</strong>: the worker receives Arrow Base64, decodes it, parses the Apache Arrow binary, transforms it into Plotly-ready JSON, and posts the traces back to the main thread — leaving the UI fully responsive throughout.</p>
+    <p>To prevent the UI from freezing when rendering charts with millions of data points, we implemented a <strong>Web Worker architecture</strong>: the worker receives Arrow Base64, decodes it, parses the Apache Arrow binary, transforms it into Plotly-ready JSON, and posts the traces back to the main thread, leaving the UI fully responsive throughout.</p>
 
     <div class="diagram-wrap">
       <div class="mermaid">
@@ -577,7 +577,7 @@ classDiagram
 
     <div class="phase-banner">
       <span class="phase-num">Phase 05</span>
-      <h2 class="phase-title">Injecting AI — NL2SQL and chat agents</h2>
+      <h2 class="phase-title">Injecting AI: NL2SQL and chat agents</h2>
     </div>
 
     <p>The final evolution gave researchers the ability to query their data in plain English. We built an AI agent directly into the React frontend, backed by a <strong>Dual-Loop pipeline</strong> with a self-healing <code>ActionReconciler</code> to prevent hallucinated tool calls.</p>
@@ -616,7 +616,7 @@ classDiagram
   <div class="section">
     <div class="section-label">08 <span>takeaways</span></div>
     <h2>Working with constraints, not against them</h2>
-    <p>The core lesson: immovable organizational constraints aren't blockers — they're the design spec. Every layer of this platform was engineered around a fixed reality rather than an ideal one.</p>
+    <p>The core lesson: immovable organizational constraints aren't blockers: they're the design spec. Every layer of this platform was engineered around a fixed reality rather than an ideal one.</p>
 
     <div class="takeaway-grid">
       <div class="takeaway-card">
