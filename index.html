@@ -352,13 +352,387 @@
     margin: 48px 0;
   }
 
+  /* — Reading Progress Bar — */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-mid), #5a9e6f);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.1s linear;
+  }
+
+  /* — Jump Navigation — */
+  .jump-nav {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 500;
+  }
+
+  .jump-nav a {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border-mid);
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .jump-nav a:hover,
+  .jump-nav a.active {
+    background: var(--accent-mid);
+    transform: scale(1.4);
+  }
+
+  .jump-nav a .nav-label {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    background: var(--surface);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+  }
+
+  .jump-nav a:hover .nav-label {
+    opacity: 1;
+  }
+
+  /* — Tooltip System — */
+  .term {
+    border-bottom: 1.5px dashed var(--accent-mid);
+    cursor: help;
+    position: relative;
+    display: inline;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .term-tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    width: 300px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 200;
+  }
+
+  .term-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--surface);
+  }
+
+  .term-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 7px solid transparent;
+    border-top-color: var(--border);
+  }
+
+  .term:hover .term-tooltip,
+  .term.tooltip-active .term-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .term-tooltip .tooltip-title {
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--accent-mid);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  .term-tooltip .wiki-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-mid);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.15s;
+  }
+
+  .term-tooltip .wiki-link:hover {
+    color: var(--accent);
+  }
+
+  /* — Glossary Panel — */
+  .glossary-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 48px;
+    overflow: hidden;
+  }
+
+  .glossary-panel summary {
+    padding: 16px 22px;
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s;
+    list-style: none;
+  }
+
+  .glossary-panel summary::-webkit-details-marker { display: none; }
+
+  .glossary-panel summary::before {
+    content: '▸';
+    font-size: 12px;
+    color: var(--accent-mid);
+    transition: transform 0.2s;
+  }
+
+  .glossary-panel[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .glossary-panel summary:hover {
+    background: var(--accent-soft);
+  }
+
+  .glossary-panel .glossary-hint {
+    font-weight: 300;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  .glossary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border-top: 1px solid var(--border);
+  }
+
+  .glossary-item {
+    background: var(--surface);
+    padding: 14px 22px;
+  }
+
+  .glossary-item dt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent-mid);
+    margin-bottom: 4px;
+  }
+
+  .glossary-item dd {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* — Preamble — */
+  .preamble {
+    margin-bottom: 48px;
+  }
+
+  .reading-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: var(--accent-soft);
+    color: var(--accent-mid);
+    margin-bottom: 16px;
+  }
+
+  .preamble-text {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 640px;
+    font-weight: 300;
+  }
+
+  .reading-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 12px;
+    letter-spacing: 0.04em;
+  }
+
+  /* — Callout Boxes — */
+  .callout {
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+  }
+
+  .callout-why {
+    background: #FFF9F0;
+    border-left: 3px solid #D4A053;
+  }
+
+  .callout-why .callout-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #B8862D;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .callout-analogy {
+    background: #F5F0FF;
+    border-left: 3px solid #7C5CBF;
+  }
+
+  .callout-analogy .callout-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6B4FA8;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  /* — Expandable Deep Dive — */
+  .deep-dive {
+    margin: 16px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .deep-dive summary {
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent-mid);
+    cursor: pointer;
+    background: var(--mono-bg);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s;
+  }
+
+  .deep-dive summary::-webkit-details-marker { display: none; }
+
+  .deep-dive summary::before {
+    content: '▸';
+    font-size: 11px;
+    transition: transform 0.2s;
+  }
+
+  .deep-dive[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .deep-dive summary:hover {
+    background: var(--accent-soft);
+  }
+
+  .deep-dive .deep-dive-content {
+    padding: 16px 18px;
+    background: var(--surface);
+  }
+
+  .deep-dive .deep-dive-content p {
+    font-size: 14px;
+  }
+
+  /* — Section animations — */
+  .diagram-wrap {
+    animation: fadeSlideUp 0.5s ease both;
+  }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
   @media (max-width: 600px) {
     header { padding: 48px 0 40px; }
     .phase-banner { flex-direction: column; align-items: flex-start; gap: 6px; }
+    .jump-nav { display: none; }
+    .term-tooltip { width: 240px; font-size: 12px; }
+    .glossary-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 900px) {
+    .jump-nav { display: none; }
   }
 </style>
 </head>
 <body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Jump Navigation -->
+<nav class="jump-nav" id="jumpNav">
+  <a href="#section-problem"><span class="nav-label">The Problem</span></a>
+  <a href="#section-architecture"><span class="nav-label">Architecture</span></a>
+  <a href="#section-phase1"><span class="nav-label">Phase 1 — Lineage</span></a>
+  <a href="#section-phase2"><span class="nav-label">Phase 2 — Orchestrator</span></a>
+  <a href="#section-phase3"><span class="nav-label">Phase 3 — Signal Cleanup</span></a>
+  <a href="#section-phase4"><span class="nav-label">Phase 4 — Frontend</span></a>
+  <a href="#section-phase5"><span class="nav-label">Phase 5 — AI Agent</span></a>
+  <a href="#section-takeaways"><span class="nav-label">Takeaways</span></a>
+</nav>
 
 <div class="page-wrap">
 
@@ -377,10 +751,24 @@
     </div>
   </header>
 
+  <!-- ─── Preamble ─── -->
+  <div class="preamble">
+    <div class="reading-badge"> Hover any <u>dashed-underline term</u> for a plain-English definition</div>
+    <p class="preamble-text">This post walks through how we built a system that automatically collects, organizes, and analyzes research data that was previously buried in spreadsheets and shared drives. If you've ever struggled with messy shared folders and copy-paste reporting, the problems here will feel familiar; and you don't need an engineering background to follow along.</p>
+    <div class="reading-time">⏱ ~12 min read</div>
+  </div>
+
+
   <!-- ─── Problem ─── -->
-  <div class="section">
+  <div class="section" id="section-problem">
     <div class="section-label">01 <span>the problem</span></div>
     <h2>Operating in the dark ages of data management</h2>
+
+    <div class="callout callout-analogy">
+      <div class="callout-label"> Think of it this way</div>
+      Imagine running a hospital where every patient record is a sticky note on someone's desk: no central filing, no backups, no way to search across patients. That was roughly the situation here, except the "patients" were experimental units and the "sticky notes" were spreadsheets.
+    </div>
+
     <p>Before this platform, every critical R&amp;D decision flowed through a tangle of Google Sheets, offline Excel dumps, and manual chart-plotting sessions. The centre produced enormous volumes of workflow data at every stage, but none of it was searchable, connected, or versioned.</p>
 
     <div class="problem-grid">
@@ -392,7 +780,7 @@
       <div class="problem-card">
         <div class="num">02</div>
         <div class="title">Data lake chaos</div>
-        <p class="desc">Time-series test data from machines was exported as <code>.xlsx</code> and synced to an offline Google Drive: no schema, no indexing, no structure to directories.</p>
+        <p class="desc">Time-series test data from machines was exported as <code>.xlsx</code> and synced to an offline Google Drive: no <span class="term" data-term="Schema" data-definition="The structure or blueprint of a database: which tables exist, what columns they have, and what type of data each column holds." data-wiki="https://en.wikipedia.org/wiki/Database_schema">schema</span>, no indexing, no structure to directories.</p>
       </div>
       <div class="problem-card">
         <div class="num">03</div>
@@ -405,13 +793,23 @@
         <p class="desc">Proposals to migrate off Sheets or use direct network drives met consistent resistance. The platform had to work <em>around</em> the existing tools.</p>
       </div>
     </div>
+
+    <div class="callout callout-why">
+      <div class="callout-label">Why does this matter?</div>
+      Every hour an analyst spent manually opening and charting spreadsheets was an hour not spent on actual R&amp;D. Without a connected view of the data, tracing a defective unit back to the process that caused the issue was nearly impossible.
+    </div>
   </div>
 
   <!-- ─── Architecture overview ─── -->
-  <div class="section">
+  <div class="section" id="section-architecture">
     <div class="section-label">02 <span>architecture overview</span></div>
     <h2>The complete platform ecosystem</h2>
-    <p>Data flowed from two immovable sources, Google Sheets and a synced Google Drive, through a PostgreSQL backbone and a file-processing layer, then out through a Node.js layer to a React frontend and an AI chat agent.</p>
+    <p>Data flowed from two immovable sources, Google Sheets and a synced Google Drive, through a <span class="term" data-term="PostgreSQL" data-definition="A powerful open-source database — think of it as a much more structured and queryable version of a spreadsheet." data-wiki="https://en.wikipedia.org/wiki/PostgreSQL">PostgreSQL</span> backbone and a file-processing layer, then out through a Node.js layer to a React frontend and an AI chat agent.</p>
+
+    <div class="callout callout-analogy">
+      <div class="callout-label"> How to read this diagram</div>
+      The diagram below shows how data flows through the system. Read it top-to-bottom: data enters from Google Sheets and Google Drive at the top, gets processed and stored in the middle layers, and reaches users through a web based analysis portal and AI assistant at the bottom.
+    </div>
 
     <div class="diagram-wrap">
       <div class="mermaid">
@@ -457,21 +855,27 @@ flowchart TD
   </div>
 
   <!-- ─── Phase 1 ─── -->
-  <div class="section">
+  <div class="section" id="section-phase1">
     <div class="section-label">03 <span>phase 1</span></div>
 
     <div class="phase-banner">
       <span class="phase-num">Phase 01</span>
-      <h2 class="phase-title">The foundation: Process lineage DAG</h2>
+      <h2 class="phase-title">The foundation: Tracking how work flows (Process lineage)</h2>
     </div>
 
-    <p>Since replacing Google Sheets wasn't an option, we built a synchronisation engine instead. Every few hours, a <strong>Google Sheet Pusher</strong> script downloads fresh CSV snapshots, compares them against the previous version, and pushes only the delta into PostgreSQL.</p>
+    <div class="callout callout-why">
+      <div class="callout-label">Why does this matter?</div>
+      Without this, if a final product failed quality checks, there was no easy way to trace back through every stage it went through to find where things went wrong. Building a connected graph of every step was the key to making that possible.
+    </div>
 
-    <p>Idempotency started at ingestion time. We kept consecutive versions of each CSV, hashed both, and only when those hashes diverged did we compute the set of mismatching process IDs and send targeted updates through the Django API. If a snapshot was unchanged, the poll became a no-op. That made scheduled syncs safe to rerun and prevented spreadsheet churn from becoming redundant database writes.</p>
+    <p>Since replacing Google Sheets wasn't an option, we built a synchronisation engine instead. Every few hours, a <strong>Google Sheet Pusher</strong> script downloads fresh <span class="term" data-term="CSV" data-definition="Comma-Separated Values — a simple text format for tabular data (like a spreadsheet saved as plain text)." data-wiki="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</span> snapshots, compares them against the previous version, and pushes only the <span class="term" data-term="Delta" data-definition="Only the rows or values that changed between two versions, rather than re-processing everything from scratch.">delta</span> into PostgreSQL.</p>
 
-    <p>The schema mirrored the real workflow without forcing researchers to change how they worked. Each stage got its own table inheriting from <code>BaseProcessModel</code>, regex rules enforced identifier consistency on the source sheets, and a <code>LineageEdge</code> table connected every stage into a queryable DAG that could handle both splits and merges.</p>
+    <p><span class="term" data-term="Idempotent" data-definition="An operation that produces the same result whether you run it once or ten times. Like pressing an elevator button; pressing it again doesn't call a second elevator.">Idempotency</span> started at ingestion time. We kept consecutive versions of each CSV, hashed both, and only when those hashes diverged did we compute the set of mismatching process IDs and send targeted updates through the <span class="term" data-term="Django" data-definition="A Python web framework that handles the 'backend' — the server-side logic, database connections, and API endpoints." data-wiki="https://en.wikipedia.org/wiki/Django_(web_framework)">Django</span> API. If a snapshot was unchanged, the poll became a no-op. That made scheduled syncs safe to rerun and prevented spreadsheet churn from becoming redundant database writes.</p>
+
+    <p>The <span class="term" data-term="Schema" data-definition="The structure or blueprint of a database: which tables exist, what columns they have, and what type of data each column holds." data-wiki="https://en.wikipedia.org/wiki/Database_schema">schema</span> mirrored the real workflow without forcing researchers to change how they worked. Each stage got its own table inheriting from <code>BaseProcessModel</code>, <span class="term" data-term="Regex" data-definition="Regular Expression — a pattern-matching language for text. For example, a regex could check if a filename follows a specific naming format." data-wiki="https://en.wikipedia.org/wiki/Regular_expression">regex</span> rules enforced identifier consistency on the source sheets, and a <code>LineageEdge</code> table connected every stage into a queryable <span class="term" data-term="DAG" data-definition="Directed Acyclic Graph — a flowchart where steps connect in one direction and never loop back. Used here to track which stage of work feeds into which." data-wiki="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</span> that could handle both splits and merges.</p>
 
     <h3>Process lineage graph</h3>
+    <p>This is easier to see than to describe. The diagram below shows a simplified version of how stages connect:</p>
     <div class="diagram-wrap">
       <div class="mermaid">
 graph LR
@@ -487,7 +891,7 @@ graph LR
   </div>
 
   <!-- ─── Phase 2 ─── -->
-  <div class="section">
+  <div class="section" id="section-phase2">
     <div class="section-label">04 <span>phase 2</span></div>
 
     <div class="phase-banner">
@@ -495,15 +899,20 @@ graph LR
       <h2 class="phase-title">Orchestrator: Making the file lake workable</h2>
     </div>
 
-    <p>To process the <code>.xlsx</code> files sitting in an offline synced Google Drive, we enforced a regex-based directory tree and a strict naming template for each analysis type. That turned a shapeless file dump into something the pipeline could actually search, classify, and reason about.</p>
+    <div class="callout callout-analogy">
+      <div class="callout-label"> Think of it this way</div>
+      Think of this phase as building an intelligent mailroom for thousands of incoming packages (files). The mailroom knows which packages it has already opened, which ones are urgent, and can open multiple packages at once, all without losing track of anything.
+    </div>
+
+    <p>To process the <code>.xlsx</code> files sitting in an offline synced Google Drive, we enforced a <span class="term" data-term="Regex" data-definition="Regular Expression — a pattern-matching language for text. For example, a regex could check if a filename follows a specific naming format." data-wiki="https://en.wikipedia.org/wiki/Regular_expression">regex</span>-based directory tree and a strict naming template for each analysis type. That turned a shapeless file dump into something the pipeline could actually search, classify, and reason about.</p>
 
     <h3>Idempotency by construction</h3>
-    <p>The orchestrator used an SQLite <code>job_status</code> table as a ledger of every discovered file path, job type, and latest outcome. Each run first loaded the set of already-successful jobs, pulled a map of the unit IDs researchers were actively tracking, searched indexed paths for candidate files, and then filtered out any path that had already been marked successful for that job type. Safe reruns stopped being a convention and became the default behavior.</p>
+    <p>The orchestrator used an <span class="term" data-term="SQLite" data-definition="A lightweight database stored as a single file — no server needed. Perfect for local bookkeeping like tracking job statuses." data-wiki="https://en.wikipedia.org/wiki/SQLite">SQLite</span> <code>job_status</code> table as a ledger of every discovered file path, job type, and latest outcome. Each run first loaded the set of already-successful jobs, pulled a map of the unit IDs researchers were actively tracking, searched indexed paths for candidate files, and then filtered out any path that had already been marked successful for that job type. This made the system <span class="term" data-term="Idempotent" data-definition="An operation that produces the same result whether you run it once or ten times. Like pressing an elevator button; pressing it again doesn't call a second elevator.">idempotent</span> ,safe reruns stopped being a convention and became the default behavior.</p>
 
     <h3>Failure handling and scheduling</h3>
     <p>The same ledger handled failure modes. Every attempt was upserted back into <code>job_status</code> with its status and logs, warnings were raised for misplaced files, and failed jobs remained eligible for later reprocessing instead of silently disappearing. A baseline qualification run acted as a <strong>gateway</strong>: downstream analysis jobs for a unit were only queued after that first qualification artifact was marked <code>SUCCESSFUL</code>.</p>
 
-    <p>The other piece that made the system usable was prioritization. Jobs were not processed FIFO: a weighted <code>heapq</code> queue scored work as <code>recency_score × job_class_weight</code>, so newer and more decision-critical files rose to the top first. Once queued, independent jobs were fanned out through <code>ProcessPoolExecutor</code>, which let us scale throughput without breaking ordering guarantees inside the dependency chain.</p>
+    <p>The other piece that made the system usable was prioritization. Jobs were not processed <span class="term" data-term="FIFO" data-definition="First In, First Out — a queue where the oldest item gets processed first (like a checkout line at a store).">FIFO</span>: a weighted <span class="term" data-term="Priority Queue" data-definition="A data structure that always gives you the highest-priority item first, rather than the oldest item (which is what a regular queue does)." data-wiki="https://en.wikipedia.org/wiki/Priority_queue"><code>heapq</code> priority queue</span> scored work as <code>recency_score × job_class_weight</code>, so newer and more decision-critical files rose to the top first. Once queued, independent jobs were fanned out through <span class="term" data-term="ProcessPoolExecutor" data-definition="A Python tool that runs multiple tasks simultaneously using separate CPU cores — like having multiple workers processing files in parallel."><code>ProcessPoolExecutor</code></span>, which let us scale throughput without breaking ordering guarantees inside the dependency chain.</p>
 
     <h3>Job dependency model</h3>
     <div class="diagram-wrap">
@@ -533,16 +942,20 @@ classDiagram
       <p class="diagram-caption">Downstream analysis jobs only run after the baseline qualification artifact clears.</p>
     </div>
 
-    <h3>Why we materialized Parquet</h3>
-    <ul class="detail-list">
-      <li><strong>Cheaper downstream I/O:</strong> raw <code>.xlsx</code> parsing was expensive, repetitive, and full of workbook-level fluff we did not care about once a job had been understood, so after a successful run the orchestrator converted only the necessary columns into Parquet.</li>
-      <li><strong>Column-oriented reads:</strong> because Parquet is built for efficient storage and retrieval, downstream routines could touch only the fields they needed instead of reparsing whole spreadsheets every time.</li>
-      <li><strong>Cleaner plotting path:</strong> our delivery layer already relied on Apache Arrow, another columnar format optimized for fast scans and low-overhead transport, so serving processed series from Parquet into Arrow was a much cleaner route than going back to raw spreadsheets for every plot.</li>
-    </ul>
+    <details class="deep-dive">
+      <summary>Deep dive: Why we converted files to Parquet</summary>
+      <div class="deep-dive-content">
+        <ul class="detail-list">
+          <li><strong>Cheaper downstream I/O:</strong> raw <code>.xlsx</code> parsing was expensive, repetitive, and full of workbook-level fluff we did not care about once a job had been understood, so after a successful run the orchestrator converted only the necessary columns into <span class="term" data-term="Parquet" data-definition="A file format optimized for storing large tabular datasets efficiently. Much faster to read than Excel for analytical workloads." data-wiki="https://en.wikipedia.org/wiki/Apache_Parquet">Parquet</span>.</li>
+          <li><strong>Column-oriented reads:</strong> because Parquet is built for efficient storage and retrieval, downstream routines could touch only the fields they needed instead of reparsing whole spreadsheets every time.</li>
+          <li><strong>Cleaner plotting path:</strong> our delivery layer already relied on <span class="term" data-term="Apache Arrow" data-definition="An in-memory data format designed for fast analytics. Think of it as a universal language that different tools can all understand without converting data back and forth." data-wiki="https://en.wikipedia.org/wiki/Apache_Arrow">Apache Arrow</span>, another columnar format optimized for fast scans and low-overhead transport, so serving processed series from Parquet into Arrow was a much cleaner route than going back to raw spreadsheets for every plot.</li>
+        </ul>
+      </div>
+    </details>
   </div>
 
   <!-- ─── Phase 3 ─── -->
-  <div class="section">
+  <div class="section" id="section-phase3">
     <div class="section-label">05 <span>phase 3</span></div>
 
     <div class="phase-banner">
@@ -550,12 +963,17 @@ classDiagram
       <h2 class="phase-title">Signal cleanup: separating spikes from real anomalies</h2>
     </div>
 
+    <div class="callout callout-why">
+      <div class="callout-label">What problem are we solving?</div>
+      Sensor data is noisy. Imagine a heart monitor that occasionally shows a spike — is that a real cardiac event, or just the patient shifting in bed? We needed to automatically tell the difference in our time-series data, so researchers could focus on the events that actually mattered.
+    </div>
+
     <p>Most of the time-series processing itself was classified business logic, but one technical problem was reusable: distinguishing meaningless spikes from true anomalies in traces whose ideal shape should have been mostly monotonic.</p>
 
-    <p>Simple derivatives were too brittle, because local slope changes fired constantly even when the underlying profile was behaving normally. We also tried <a href="https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter" target="_blank" rel="noopener noreferrer">Savitzky-Golay smoothing</a>, which helped with denoising but still did not reliably separate nuisance spikes from the events that actually mattered.</p>
+    <p>Simple derivatives were too brittle, because local slope changes fired constantly even when the underlying profile was behaving normally. We also tried <span class="term" data-term="Savitzky–Golay filter" data-definition="A mathematical smoothing technique that reduces noise in data while preserving the overall shape of the signal." data-wiki="https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter">Savitzky-Golay smoothing</span>, which helped with denoising but still did not reliably separate nuisance spikes from the events that actually mattered.</p>
 
     <h3>The heuristic that worked</h3>
-    <p>The approach that finally held up was a layered heuristic. We first measured deviation inside a rolling window and flagged only windows whose deviation crossed a tuned threshold. Those candidate spike windows were then embedded into a 3D feature space built from the original trace axes plus the deviation signal, and clustered with <a href="https://en.wikipedia.org/wiki/DBSCAN" target="_blank" rel="noopener noreferrer"><code>DBSCAN</code></a>, with careful tuning of <code>eps</code> and <code>minPts</code>. Dense regions of candidates usually corresponded to recurring spike behavior or measurement artifacts; candidates that failed to join any cluster were treated as the real anomalies worth escalating.</p>
+    <p>The approach that finally held up was a layered heuristic. We first measured deviation inside a rolling window and flagged only windows whose deviation crossed a tuned threshold. Those candidate spike windows were then embedded into a 3D feature space built from the original trace axes plus the deviation signal, and clustered with <span class="term" data-term="DBSCAN" data-definition="A clustering algorithm that groups nearby data points together and marks isolated ones as outliers — used here to separate real anomalies from harmless spikes." data-wiki="https://en.wikipedia.org/wiki/DBSCAN">DBSCAN</span>, with careful tuning of <code>eps</code> (how close points need to be to form a cluster) and <code>minPts</code> (minimum number of points for a cluster). Dense regions of candidates usually corresponded to recurring spike behavior or measurement artifacts; candidates that failed to join any cluster were treated as the real anomalies worth escalating.</p>
 
     <div class="diagram-wrap">
       <div class="mermaid">
@@ -581,7 +999,7 @@ flowchart TD
   </div>
 
   <!-- ─── Phase 4 ─── -->
-  <div class="section">
+  <div class="section" id="section-phase4">
     <div class="section-label">06 <span>phase 4</span></div>
 
     <div class="phase-banner">
@@ -589,9 +1007,14 @@ flowchart TD
       <h2 class="phase-title">Presentation layer: React + Express</h2>
     </div>
 
-    <p>With data ingested and files processed into Parquet/Arrow formats, we built a web interface to replace manual plotting. An Express.js backend acts as a high-performance REST proxy and cache in front of Django, with a dedicated Python microservice that reads Parquet files and returns Arrow IPC data as Base64.</p>
+    <div class="callout callout-why">
+      <div class="callout-label">What problem are we solving?</div>
+      All the data processing in the world is useless if the results stay buried in files on a server. This phase turned invisible processed data into interactive charts and dashboards that researchers could actually use — without freezing their browsers.
+    </div>
 
-    <p>To prevent the UI from freezing when rendering charts with millions of data points, we implemented a <strong>Web Worker architecture</strong>: the worker receives Arrow Base64, decodes it, parses the Apache Arrow binary, transforms it into Plotly-ready JSON, and posts the traces back to the main thread, leaving the UI fully responsive throughout. Session-level caches reduced repeat fetches, and defensive UI boundaries ensured that a bad plot or malformed payload degraded locally instead of crashing the whole experience.</p>
+    <p>With data ingested and files processed into Parquet/Arrow formats, we built a web interface to replace manual plotting. An Express.js backend acts as a high-performance <span class="term" data-term="REST API" data-definition="A standard way for software systems to talk to each other over the internet using simple HTTP requests (like loading a web page, but for data)." data-wiki="https://en.wikipedia.org/wiki/REST">REST</span> proxy and cache in front of Django, with a dedicated Python microservice that reads Parquet files and returns <span class="term" data-term="Apache Arrow" data-definition="An in-memory data format designed for fast analytics. Think of it as a universal language that different tools can all understand without converting data back and forth." data-wiki="https://en.wikipedia.org/wiki/Apache_Arrow">Arrow</span> <span class="term" data-term="IPC" data-definition="Inter-Process Communication — a way for separate programs (or parts of a program) to send data to each other.">IPC</span> data as Base64.</p>
+
+    <p>To prevent the UI from freezing when rendering charts with millions of data points, we implemented a <span class="term" data-term="Web Worker" data-definition="A browser feature that runs code in a background thread, so heavy computation doesn't freeze the user interface." data-wiki="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API"><strong>Web Worker</strong></span> architecture: the worker receives Arrow Base64, decodes it, parses the Apache Arrow binary, transforms it into Plotly-ready JSON, and posts the traces back to the main thread, leaving the UI fully responsive throughout. Session-level caches reduced repeat fetches, and defensive UI boundaries ensured that a bad plot or malformed payload degraded locally instead of crashing the whole experience.</p>
 
     <div class="diagram-wrap">
       <div class="mermaid">
@@ -622,19 +1045,28 @@ classDiagram
   </div>
 
   <!-- ─── Phase 5 ─── -->
-  <div class="section">
+  <div class="section" id="section-phase5">
     <div class="section-label">07 <span>phase 5</span></div>
 
     <div class="phase-banner">
       <span class="phase-num">Phase 05</span>
-      <h2 class="phase-title">Injecting AI: NL2SQL and chat agents</h2>
+      <h2 class="phase-title">Injecting AI: Natural-language queries and chat agents</h2>
     </div>
 
-    <p>The final evolution gave researchers the ability to query their data in plain English. We built an AI agent directly into the React frontend, backed by a <strong>Dual-Loop pipeline</strong> with a self-healing <code>ActionReconciler</code> to prevent hallucinated tool calls.</p>
+    <div class="callout callout-analogy">
+      <div class="callout-label"> The big idea</div>
+      What if researchers could just type a question like <em>"Which units failed the stress test last week?"</em> and get an answer, without knowing anything about databases or writing any code?
+    </div>
 
-    <p>We also benchmarked the LLM providers and models we had access to before deciding where each one fit. A separate pytest-based NL2SQL harness ran structured query tasks across multiple models, checking not just whether they produced something plausible, but whether they returned parseable JSON, generated executable SQL, and matched validated reference behavior. The evaluation was extensive, measured both accuracy and response time, and clear winners emerged.</p>
+    <p>The final evolution gave researchers the ability to query their data in plain English. We built an AI agent directly into the React frontend, backed by a <strong>Dual-Loop pipeline</strong> with a self-healing <code>ActionReconciler</code> to prevent <span class="term" data-term="Hallucination" data-definition="When an AI confidently produces incorrect or fabricated information — a known failure mode of language models.">hallucinated</span> tool calls.</p>
 
-    <p>That benchmarking changed how we used models in practice. Faster and cheaper models made sense for narrow classification work, while stronger models were reserved for heavier generation tasks. Our validation was also intentionally a little fuzzy in the right places: if a model returned a superset of columns but the row count and row values still matched the correct answer, we treated that as acceptable because the information was still right. Just as importantly, the benchmark suite made failure modes visible early: some models rambled instead of returning structured JSON, some timed out, and some generated SQL that looked reasonable but failed execution or result validation.</p>
+    <details class="deep-dive">
+      <summary>Deep dive: Benchmarking AI models before committing</summary>
+      <div class="deep-dive-content">
+        <p>We benchmarked the <span class="term" data-term="LLM" data-definition="Large Language Model — an AI model (like ChatGPT) trained on vast amounts of text, capable of understanding and generating human language." data-wiki="https://en.wikipedia.org/wiki/Large_language_model">LLM</span> providers and models we had access to before deciding where each one fit. A separate pytest-based <span class="term" data-term="NL2SQL" data-definition="Natural Language to SQL — a technique that lets you type a question in plain English and have AI convert it into a database query automatically." data-wiki="https://en.wikipedia.org/wiki/Natural-language_interface">NL2SQL</span> harness ran structured query tasks across multiple models, checking not just whether they produced something plausible, but whether they returned parseable JSON, generated executable <span class="term" data-term="SQL" data-definition="Structured Query Language — the standard language for asking questions of a database, like 'show me all units that failed testing.'" data-wiki="https://en.wikipedia.org/wiki/SQL">SQL</span>, and matched validated reference behavior.</p>
+        <p>That benchmarking changed how we used models in practice. Faster and cheaper models made sense for narrow classification work, while stronger models were reserved for heavier generation tasks. Our validation was also intentionally a little fuzzy in the right places: if a model returned a superset of columns but the row count and row values still matched the correct answer, we treated that as acceptable because the information was still right. Just as importantly, the benchmark suite made failure modes visible early: some models rambled instead of returning structured JSON, some timed out, and some generated SQL that looked reasonable but failed execution or result validation.</p>
+      </div>
+    </details>
 
     <p>The reconciler detects mismatches between the intent classifier's output and the main generator's proposed actions, then runs a targeted healing pass before the response reaches the user, significantly reducing erroneous tool invocations in production.</p>
 
@@ -667,10 +1099,10 @@ classDiagram
   <hr class="divider" />
 
   <!-- ─── Takeaways ─── -->
-  <div class="section">
+  <div class="section" id="section-takeaways">
     <div class="section-label">08 <span>takeaways</span></div>
     <h2>Working with constraints, not against them</h2>
-    <p>The core lesson: immovable organizational constraints aren't blockers: they're the design spec. Every layer of this platform was engineered around a fixed reality rather than an ideal one.</p>
+    <p>The core lesson: immovable organizational constraints aren't blockers — they're the design spec. Every layer of this platform was engineered around a fixed reality rather than an ideal one.</p>
 
     <div class="takeaway-grid">
       <div class="takeaway-card">
@@ -679,7 +1111,7 @@ classDiagram
       </div>
       <div class="takeaway-card">
         <div class="t-title">Lineage as a first-class primitive</div>
-        <p class="t-desc">Modelling the workflow DAG explicitly in Postgres enabled traceability and cross-stage queries that were previously impossible.</p>
+        <p class="t-desc">Modelling the workflow <span class="term" data-term="DAG" data-definition="Directed Acyclic Graph — a flowchart where steps connect in one direction and never loop back. Used here to track which stage of work feeds into which." data-wiki="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</span> explicitly in Postgres enabled traceability and cross-stage queries that were previously impossible.</p>
       </div>
       <div class="takeaway-card">
         <div class="t-title">Priority over FIFO</div>
@@ -687,15 +1119,15 @@ classDiagram
       </div>
       <div class="takeaway-card">
         <div class="t-title">Heuristics over naive calculus</div>
-        <p class="t-desc">Rolling-window deviation plus DBSCAN worked better than simple derivatives when the goal was separating recurring spikes from true anomalies.</p>
+        <p class="t-desc">Rolling-window deviation plus <span class="term" data-term="DBSCAN" data-definition="A clustering algorithm that groups nearby data points together and marks isolated ones as outliers — used here to separate real anomalies from harmless spikes." data-wiki="https://en.wikipedia.org/wiki/DBSCAN">DBSCAN</span> worked better than simple derivatives when the goal was separating recurring spikes from true anomalies.</p>
       </div>
       <div class="takeaway-card">
         <div class="t-title">Benchmark before betting</div>
-        <p class="t-desc">A pytest-based benchmark suite told us which models were dependable for classification, generation, and NL2SQL, and which ones only looked convincing.</p>
+        <p class="t-desc">A pytest-based benchmark suite told us which models were dependable for classification, generation, and <span class="term" data-term="NL2SQL" data-definition="Natural Language to SQL — a technique that lets you type a question in plain English and have AI convert it into a database query automatically." data-wiki="https://en.wikipedia.org/wiki/Natural-language_interface">NL2SQL</span>, and which ones only looked convincing.</p>
       </div>
       <div class="takeaway-card">
         <div class="t-title">Self-healing agents</div>
-        <p class="t-desc">The Action Reconciler pattern: classify intent, generate, then verify; dramatically reduced hallucinated tool calls at the LLM layer.</p>
+        <p class="t-desc">The Action Reconciler pattern — classify intent, generate, then verify — dramatically reduced <span class="term" data-term="Hallucination" data-definition="When an AI confidently produces incorrect or fabricated information — a known failure mode of language models.">hallucinated</span> tool calls at the <span class="term" data-term="LLM" data-definition="Large Language Model — an AI model (like ChatGPT) trained on vast amounts of text, capable of understanding and generating human language." data-wiki="https://en.wikipedia.org/wiki/Large_language_model">LLM</span> layer.</p>
       </div>
     </div>
   </div>
@@ -711,6 +1143,7 @@ classDiagram
 </div>
 
 <script>
+  // ─── Mermaid ───
   mermaid.initialize({
     startOnLoad: true,
     theme: 'neutral',
@@ -726,6 +1159,92 @@ classDiagram
     },
     flowchart: { curve: 'basis', padding: 20 },
     classDiagram: { useMaxWidth: true },
+  });
+
+  // ─── Tooltip Generation ───
+  document.querySelectorAll('.term').forEach(el => {
+    const tip = document.createElement('span');
+    tip.className = 'term-tooltip';
+
+    let html = '';
+    if (el.dataset.term) {
+      html += `<div class="tooltip-title">${el.dataset.term}</div>`;
+    }
+    html += el.dataset.definition || '';
+    if (el.dataset.wiki) {
+      html += `<a class="wiki-link" href="${el.dataset.wiki}" target="_blank" rel="noopener noreferrer">→ Read more on Wikipedia</a>`;
+    }
+    tip.innerHTML = html;
+    el.appendChild(tip);
+  });
+
+  // ─── Mobile Tap Support for Tooltips ───
+  let activeTooltip = null;
+  document.addEventListener('touchstart', (e) => {
+    const term = e.target.closest('.term');
+    if (term) {
+      e.preventDefault();
+      if (activeTooltip && activeTooltip !== term) {
+        activeTooltip.classList.remove('tooltip-active');
+      }
+      term.classList.toggle('tooltip-active');
+      activeTooltip = term.classList.contains('tooltip-active') ? term : null;
+    } else {
+      if (activeTooltip) {
+        activeTooltip.classList.remove('tooltip-active');
+        activeTooltip = null;
+      }
+    }
+  });
+
+  // ─── Reading Progress Bar ───
+  const progressBar = document.getElementById('progressBar');
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = progress + '%';
+  }, { passive: true });
+
+  // ─── Jump Nav Active State ───
+  const jumpNavLinks = document.querySelectorAll('.jump-nav a');
+  const sections = [
+    'section-problem', 'section-architecture', 'section-phase1',
+    'section-phase2', 'section-phase3', 'section-phase4',
+    'section-phase5', 'section-takeaways'
+  ];
+
+  function updateJumpNav() {
+    const scrollY = window.scrollY + 200;
+    let currentSection = '';
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.offsetTop <= scrollY) {
+        currentSection = id;
+      }
+    });
+    jumpNavLinks.forEach(link => {
+      const href = link.getAttribute('href').replace('#', '');
+      link.classList.toggle('active', href === currentSection);
+    });
+  }
+
+  window.addEventListener('scroll', updateJumpNav, { passive: true });
+  updateJumpNav();
+
+  // ─── Scroll-triggered Animations for Diagrams ───
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animationPlayState = 'running';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.diagram-wrap').forEach(el => {
+    el.style.animationPlayState = 'paused';
+    observer.observe(el);
   });
 </script>
 </body>
