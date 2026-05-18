@@ -8,715 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #F9F7F3;
-    --surface: #FFFFFF;
-    --border: #E5E1D8;
-    --border-mid: #CCC8BF;
-    --text-primary: #1A1816;
-    --text-secondary: #5C574E;
-    --text-muted: #8C877D;
-    --accent: #1A3A2A;
-    --accent-soft: #EAF0EC;
-    --accent-mid: #3B6D4A;
-    --mono-bg: #F2F0EB;
-    --tag-bg: #EAF0EC;
-    --tag-text: #2A5538;
-  }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: 'Geist', sans-serif;
-    background: var(--bg);
-    color: var(--text-primary);
-    font-size: 16px;
-    line-height: 1.7;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* — Layout — */
-  .page-wrap {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 0 24px;
-  }
-
-  /* — Header — */
-  header {
-    padding: 80px 0 60px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 64px;
-  }
-
-  .eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent-mid);
-    margin-bottom: 20px;
-  }
-
-  h1 {
-    font-family: 'Literata', serif;
-    font-size: clamp(28px, 5vw, 44px);
-    font-weight: 400;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
-    margin-bottom: 20px;
-  }
-
-  .subtitle {
-    font-size: 17px;
-    color: var(--text-secondary);
-    font-weight: 300;
-    max-width: 600px;
-    line-height: 1.65;
-    margin-bottom: 28px;
-  }
-
-  .meta-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .tag {
-    display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    padding: 4px 10px;
-    border-radius: 4px;
-    background: var(--tag-bg);
-    color: var(--tag-text);
-    letter-spacing: 0.04em;
-  }
-
-  /* — Sections — */
-  .section {
-    margin-bottom: 72px;
-  }
-
-  .section-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 24px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .section-label span {
-    font-size: 13px;
-    color: var(--border-mid);
-    font-family: 'Literata', serif;
-    font-style: italic;
-  }
-
-  h2 {
-    font-family: 'Literata', serif;
-    font-size: 24px;
-    font-weight: 400;
-    letter-spacing: -0.01em;
-    margin-bottom: 14px;
-    color: var(--text-primary);
-  }
-
-  h3 {
-    font-family: 'Geist', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    color: var(--text-secondary);
-    margin: 36px 0 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  p {
-    color: var(--text-secondary);
-    margin-bottom: 16px;
-    font-size: 15.5px;
-  }
-
-  p:last-child { margin-bottom: 0; }
-
-  p a {
-    color: var(--accent-mid);
-    text-decoration-thickness: 1px;
-    text-underline-offset: 2px;
-  }
-
-  p a:hover { color: var(--accent); }
-
-  .detail-list {
-    margin: 12px 0 0 20px;
-    color: var(--text-secondary);
-  }
-
-  .detail-list li {
-    margin-bottom: 10px;
-    padding-left: 4px;
-  }
-
-  .detail-list strong {
-    color: var(--text-primary);
-    font-weight: 500;
-  }
-
-  /* — Problem cards — */
-  .problem-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    margin: 28px 0;
-  }
-
-  .problem-card {
-    background: var(--surface);
-    padding: 20px 22px;
-  }
-
-  .problem-card .num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-  }
-
-  .problem-card .title {
-    font-weight: 500;
-    font-size: 14px;
-    color: var(--text-primary);
-    margin-bottom: 6px;
-  }
-
-  .problem-card .desc {
-    font-size: 13px;
-    color: var(--text-secondary);
-    line-height: 1.55;
-    margin: 0;
-  }
-
-  /* — Phase banner — */
-  .phase-banner {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 20px;
-    background: var(--accent-soft);
-    border-left: 3px solid var(--accent-mid);
-    border-radius: 0 8px 8px 0;
-    margin: 40px 0 24px;
-  }
-
-  .phase-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent-mid);
-    white-space: nowrap;
-  }
-
-  .phase-title {
-    font-family: 'Literata', serif;
-    font-size: 18px;
-    font-weight: 400;
-    color: var(--accent);
-    margin: 0;
-  }
-
-  /* — Mermaid diagrams — */
-  .diagram-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 24px 20px;
-    margin: 24px 0;
-    overflow-x: auto;
-  }
-
-  .diagram-caption {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-muted);
-    text-align: center;
-    margin-top: 12px;
-  }
-
-  .mermaid {
-    display: flex;
-    justify-content: center;
-  }
-
-  /* — Inline highlight — */
-  code {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    background: var(--mono-bg);
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: var(--text-primary);
-  }
-
-  /* — Takeaway cards — */
-  .takeaway-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 12px;
-    margin-top: 24px;
-  }
-
-  .takeaway-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px 20px;
-  }
-
-  .takeaway-card .icon {
-    font-size: 20px;
-    margin-bottom: 10px;
-  }
-
-  .takeaway-card .t-title {
-    font-weight: 500;
-    font-size: 14px;
-    color: var(--text-primary);
-    margin-bottom: 6px;
-  }
-
-  .takeaway-card .t-desc {
-    font-size: 13px;
-    color: var(--text-secondary);
-    line-height: 1.5;
-    margin: 0;
-  }
-
-  /* — Footer — */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 40px 0 60px;
-    margin-top: 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  footer .name {
-    font-family: 'Literata', serif;
-    font-size: 15px;
-    color: var(--text-secondary);
-    font-style: italic;
-  }
-
-  footer .links {
-    display: flex;
-    gap: 20px;
-  }
-
-  footer a {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    color: var(--text-muted);
-    text-decoration: none;
-    text-transform: uppercase;
-    transition: color 0.15s;
-  }
-
-  footer a:hover { color: var(--accent-mid); }
-
-  /* — Divider — */
-  .divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 48px 0;
-  }
-
-  /* — Reading Progress Bar — */
-  .progress-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--accent-mid), #5a9e6f);
-    width: 0%;
-    z-index: 1000;
-    transition: width 0.1s linear;
-  }
-
-  /* — Jump Navigation — */
-  .jump-nav {
-    position: fixed;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    z-index: 500;
-  }
-
-  .jump-nav a {
-    display: block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--border-mid);
-    transition: all 0.2s ease;
-    position: relative;
-  }
-
-  .jump-nav a:hover,
-  .jump-nav a.active {
-    background: var(--accent-mid);
-    transform: scale(1.4);
-  }
-
-  .jump-nav a .nav-label {
-    position: absolute;
-    right: 18px;
-    top: 50%;
-    transform: translateY(-50%);
-    white-space: nowrap;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    background: var(--surface);
-    padding: 3px 8px;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.15s;
-  }
-
-  .jump-nav a:hover .nav-label {
-    opacity: 1;
-  }
-
-  /* — Tooltip System — */
-  .term {
-    border-bottom: 1.5px dashed var(--accent-mid);
-    cursor: help;
-    position: relative;
-    display: inline;
-    color: var(--text-primary);
-    font-weight: 500;
-  }
-
-  .term-tooltip {
-    position: absolute;
-    bottom: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%) translateY(4px);
-    width: 300px;
-    padding: 14px 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.10);
-    font-size: 13px;
-    font-weight: 400;
-    line-height: 1.6;
-    color: var(--text-secondary);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.18s ease, transform 0.18s ease;
-    z-index: 200;
-  }
-
-  .term-tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: var(--surface);
-  }
-
-  .term-tooltip::before {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 7px solid transparent;
-    border-top-color: var(--border);
-  }
-
-  .term:hover .term-tooltip,
-  .term.tooltip-active .term-tooltip {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  .term-tooltip .tooltip-title {
-    font-weight: 500;
-    font-size: 12px;
-    color: var(--accent-mid);
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.04em;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-  }
-
-  .term-tooltip .wiki-link {
-    display: inline-block;
-    margin-top: 8px;
-    font-size: 11px;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--accent-mid);
-    text-decoration: none;
-    letter-spacing: 0.02em;
-    transition: color 0.15s;
-  }
-
-  .term-tooltip .wiki-link:hover {
-    color: var(--accent);
-  }
-
-  /* — Glossary Panel — */
-  .glossary-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    margin-bottom: 48px;
-    overflow: hidden;
-  }
-
-  .glossary-panel summary {
-    padding: 16px 22px;
-    font-family: 'Geist', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: background 0.15s;
-    list-style: none;
-  }
-
-  .glossary-panel summary::-webkit-details-marker { display: none; }
-
-  .glossary-panel summary::before {
-    content: '▸';
-    font-size: 12px;
-    color: var(--accent-mid);
-    transition: transform 0.2s;
-  }
-
-  .glossary-panel[open] summary::before {
-    transform: rotate(90deg);
-  }
-
-  .glossary-panel summary:hover {
-    background: var(--accent-soft);
-  }
-
-  .glossary-panel .glossary-hint {
-    font-weight: 300;
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-left: auto;
-  }
-
-  .glossary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1px;
-    background: var(--border);
-    border-top: 1px solid var(--border);
-  }
-
-  .glossary-item {
-    background: var(--surface);
-    padding: 14px 22px;
-  }
-
-  .glossary-item dt {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--accent-mid);
-    margin-bottom: 4px;
-  }
-
-  .glossary-item dd {
-    font-size: 13px;
-    color: var(--text-secondary);
-    line-height: 1.55;
-    margin: 0;
-  }
-
-  /* — Preamble — */
-  .preamble {
-    margin-bottom: 48px;
-  }
-
-  .reading-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    padding: 6px 14px;
-    border-radius: 20px;
-    background: var(--accent-soft);
-    color: var(--accent-mid);
-    margin-bottom: 16px;
-  }
-
-  .preamble-text {
-    font-size: 15px;
-    color: var(--text-secondary);
-    line-height: 1.7;
-    max-width: 640px;
-    font-weight: 300;
-  }
-
-  .reading-time {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 12px;
-    letter-spacing: 0.04em;
-  }
-
-  /* — Callout Boxes — */
-  .callout {
-    padding: 16px 20px;
-    border-radius: 0 8px 8px 0;
-    margin: 20px 0;
-    font-size: 14px;
-    line-height: 1.65;
-    color: var(--text-secondary);
-  }
-
-  .callout-why {
-    background: #FFF9F0;
-    border-left: 3px solid #D4A053;
-  }
-
-  .callout-why .callout-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #B8862D;
-    margin-bottom: 8px;
-    font-weight: 500;
-  }
-
-  .callout-analogy {
-    background: #F5F0FF;
-    border-left: 3px solid #7C5CBF;
-  }
-
-  .callout-analogy .callout-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #6B4FA8;
-    margin-bottom: 8px;
-    font-weight: 500;
-  }
-
-  /* — Expandable Deep Dive — */
-  .deep-dive {
-    margin: 16px 0;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .deep-dive summary {
-    padding: 12px 18px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--accent-mid);
-    cursor: pointer;
-    background: var(--mono-bg);
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background 0.15s;
-  }
-
-  .deep-dive summary::-webkit-details-marker { display: none; }
-
-  .deep-dive summary::before {
-    content: '▸';
-    font-size: 11px;
-    transition: transform 0.2s;
-  }
-
-  .deep-dive[open] summary::before {
-    transform: rotate(90deg);
-  }
-
-  .deep-dive summary:hover {
-    background: var(--accent-soft);
-  }
-
-  .deep-dive .deep-dive-content {
-    padding: 16px 18px;
-    background: var(--surface);
-  }
-
-  .deep-dive .deep-dive-content p {
-    font-size: 14px;
-  }
-
-  /* — Section animations — */
-  .diagram-wrap {
-    animation: fadeSlideUp 0.5s ease both;
-  }
-
-  @keyframes fadeSlideUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  @media (max-width: 600px) {
-    header { padding: 48px 0 40px; }
-    .phase-banner { flex-direction: column; align-items: flex-start; gap: 6px; }
-    .jump-nav { display: none; }
-    .term-tooltip { width: 240px; font-size: 12px; }
-    .glossary-grid { grid-template-columns: 1fr; }
-  }
-
-  @media (max-width: 900px) {
-    .jump-nav { display: none; }
-  }
-</style>
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
@@ -804,7 +96,7 @@
   <div class="section" id="section-architecture">
     <div class="section-label">02 <span>architecture overview</span></div>
     <h2>The complete platform ecosystem</h2>
-    <p>Data flowed from two immovable sources, Google Sheets and a synced Google Drive, through a <span class="term" data-term="PostgreSQL" data-definition="A powerful open-source database — think of it as a much more structured and queryable version of a spreadsheet." data-wiki="https://en.wikipedia.org/wiki/PostgreSQL">PostgreSQL</span> backbone and a file-processing layer, then out through a Node.js layer to a React frontend and an AI chat agent.</p>
+    <p>Data flowed from two immovable sources, Google Sheets and a synced Google Drive, through a PostgreSQL backbone and a file-processing layer, then out through a Node.js layer to a React frontend and an AI chat agent.</p>
 
     <div class="callout callout-analogy">
       <div class="callout-label"> How to read this diagram</div>
@@ -850,7 +142,7 @@ flowchart TD
         Routes -->|"JSON Payloads"| AIAgent
     end
       </div>
-      <p class="diagram-caption">Polling ingestion into PostgreSQL fed the metadata layer, while a production SQLite-backed orchestrator handled file discovery, priority scheduling, and parallel processing for time-series work.</p>
+      <p class="diagram-caption"><strong>Fig 1.</strong> Polling ingestion into PostgreSQL fed the metadata layer, while an SQLite-backed orchestrator handled file discovery, priority scheduling, and parallel processing for time-series work.</p>
     </div>
   </div>
 
@@ -868,11 +160,11 @@ flowchart TD
       Without this, if a final product failed quality checks, there was no easy way to trace back through every stage it went through to find where things went wrong. Building a connected graph of every step was the key to making that possible.
     </div>
 
-    <p>Since replacing Google Sheets wasn't an option, we built a synchronisation engine instead. Every few hours, a <strong>Google Sheet Pusher</strong> script downloads fresh <span class="term" data-term="CSV" data-definition="Comma-Separated Values — a simple text format for tabular data (like a spreadsheet saved as plain text)." data-wiki="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</span> snapshots, compares them against the previous version, and pushes only the <span class="term" data-term="Delta" data-definition="Only the rows or values that changed between two versions, rather than re-processing everything from scratch.">delta</span> into PostgreSQL.</p>
+    <p>Since replacing Google Sheets wasn't an option, we built a synchronisation engine instead. Every few hours, a <strong>Google Sheet Pusher</strong> script downloads fresh CSV snapshots, compares them against the previous version, and pushes only the <span class="term" data-term="Delta" data-definition="Only the rows or values that changed between two versions, rather than re-processing everything from scratch.">delta</span> into PostgreSQL.</p>
 
-    <p><span class="term" data-term="Idempotent" data-definition="An operation that produces the same result whether you run it once or ten times. Like pressing an elevator button; pressing it again doesn't call a second elevator.">Idempotency</span> started at ingestion time. We kept consecutive versions of each CSV, hashed both, and only when those hashes diverged did we compute the set of mismatching process IDs and send targeted updates through the <span class="term" data-term="Django" data-definition="A Python web framework that handles the 'backend' — the server-side logic, database connections, and API endpoints." data-wiki="https://en.wikipedia.org/wiki/Django_(web_framework)">Django</span> API. If a snapshot was unchanged, the poll became a no-op. That made scheduled syncs safe to rerun and prevented spreadsheet churn from becoming redundant database writes.</p>
+    <p><span class="term" data-term="Idempotent" data-definition="An operation that produces the same result whether you run it once or ten times. Like pressing an elevator button; pressing it again doesn't call a second elevator.">Idempotency</span> started at ingestion time. We kept consecutive versions of each CSV, hashed both, and only when those hashes diverged did we compute the set of mismatching process IDs and send targeted updates through the <span class="term" data-term="Django" data-definition="A Python web framework that handles the 'backend', the server-side logic, database connections, and API endpoints." data-wiki="https://en.wikipedia.org/wiki/Django_(web_framework)">Django</span> API. If a snapshot was unchanged, the poll became a no-op. That made scheduled syncs safe to rerun and prevented spreadsheet churn from becoming redundant database writes.</p>
 
-    <p>The <span class="term" data-term="Schema" data-definition="The structure or blueprint of a database: which tables exist, what columns they have, and what type of data each column holds." data-wiki="https://en.wikipedia.org/wiki/Database_schema">schema</span> mirrored the real workflow without forcing researchers to change how they worked. Each stage got its own table inheriting from <code>BaseProcessModel</code>, <span class="term" data-term="Regex" data-definition="Regular Expression — a pattern-matching language for text. For example, a regex could check if a filename follows a specific naming format." data-wiki="https://en.wikipedia.org/wiki/Regular_expression">regex</span> rules enforced identifier consistency on the source sheets, and a <code>LineageEdge</code> table connected every stage into a queryable <span class="term" data-term="DAG" data-definition="Directed Acyclic Graph — a flowchart where steps connect in one direction and never loop back. Used here to track which stage of work feeds into which." data-wiki="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</span> that could handle both splits and merges.</p>
+    <p>The <span class="term" data-term="Schema" data-definition="The structure or blueprint of a database: which tables exist, what columns they have, and what type of data each column holds." data-wiki="https://en.wikipedia.org/wiki/Database_schema">schema</span> mirrored the real workflow without forcing researchers to change how they worked. Each stage got its own table <span class="term" data-term="Inheritance" data-definition="In programming, when a new system component automatically takes on the properties and behaviors of a parent component, reducing repetitive code." data-wiki="https://en.wikipedia.org/wiki/Inheritance_(object-oriented_programming)">inheriting</span> from <code>BaseProcessModel</code>, <span class="term" data-term="Regex" data-definition="Regular Expression: A pattern-matching language for text." data-wiki="https://en.wikipedia.org/wiki/Regular_expression">regex</span> rules enforced identifier consistency on the source sheets, and a <code>LineageEdge</code> table connected every stage into a queryable <span class="term" data-term="DAG" data-definition="Directed Acyclic Graph: a flowchart where steps connect in one direction and never loop back. Used here to track which stage of work feeds into which." data-wiki="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</span> that could handle both splits and merges.</p>
 
     <h3>Process lineage graph</h3>
     <p>This is easier to see than to describe. The diagram below shows a simplified version of how stages connect:</p>
@@ -886,7 +178,7 @@ graph LR
     BranchB --> Assembly
     Assembly --> Qualification
       </div>
-      <p class="diagram-caption">A simplified lineage view; the real graph spans more stages and explicitly models branch-and-merge relationships between units.</p>
+      <p class="diagram-caption"><strong>Fig 2.</strong> A simplified lineage view; the real graph spans more stages and explicitly models branch-and-merge relationships between units.</p>
     </div>
   </div>
 
@@ -904,15 +196,15 @@ graph LR
       Think of this phase as building an intelligent mailroom for thousands of incoming packages (files). The mailroom knows which packages it has already opened, which ones are urgent, and can open multiple packages at once, all without losing track of anything.
     </div>
 
-    <p>To process the <code>.xlsx</code> files sitting in an offline synced Google Drive, we enforced a <span class="term" data-term="Regex" data-definition="Regular Expression — a pattern-matching language for text. For example, a regex could check if a filename follows a specific naming format." data-wiki="https://en.wikipedia.org/wiki/Regular_expression">regex</span>-based directory tree and a strict naming template for each analysis type. That turned a shapeless file dump into something the pipeline could actually search, classify, and reason about.</p>
+    <p>To process the <code>.xlsx</code> files sitting in an offline synced Google Drive, we enforced a <span class="term" data-term="Regex" data-definition="Regular Expression: A pattern-matching language for text." data-wiki="https://en.wikipedia.org/wiki/Regular_expression">regex</span>-based directory tree and a strict naming template for each analysis type. That turned a shapeless file dump into something the pipeline could actually search, classify, and reason about.</p>
 
     <h3>Idempotency by construction</h3>
-    <p>The orchestrator used an <span class="term" data-term="SQLite" data-definition="A lightweight database stored as a single file — no server needed. Perfect for local bookkeeping like tracking job statuses." data-wiki="https://en.wikipedia.org/wiki/SQLite">SQLite</span> <code>job_status</code> table as a ledger of every discovered file path, job type, and latest outcome. Each run first loaded the set of already-successful jobs, pulled a map of the unit IDs researchers were actively tracking, searched indexed paths for candidate files, and then filtered out any path that had already been marked successful for that job type. This made the system <span class="term" data-term="Idempotent" data-definition="An operation that produces the same result whether you run it once or ten times. Like pressing an elevator button; pressing it again doesn't call a second elevator.">idempotent</span> ,safe reruns stopped being a convention and became the default behavior.</p>
+    <p>The orchestrator used an <span class="term" data-term="SQLite" data-definition="A lightweight database stored as a single file, no server needed." data-wiki="https://en.wikipedia.org/wiki/SQLite">SQLite</span> <code>job_status</code> table as a ledger of every discovered file path, job type, and latest outcome. Each run first loaded the set of already-successful jobs, pulled a map of the unit IDs researchers were actively tracking, searched indexed paths for candidate files, and then filtered out any path that had already been marked successful for that job type. This made the system <span class="term" data-term="Idempotent" data-definition="An operation that produces the same result whether you run it once or ten times. Like pressing an elevator button; pressing it again doesn't call a second elevator.">idempotent</span>, safe reruns stopped being a convention and became the default behavior.</p>
 
     <h3>Failure handling and scheduling</h3>
     <p>The same ledger handled failure modes. Every attempt was upserted back into <code>job_status</code> with its status and logs, warnings were raised for misplaced files, and failed jobs remained eligible for later reprocessing instead of silently disappearing. A baseline qualification run acted as a <strong>gateway</strong>: downstream analysis jobs for a unit were only queued after that first qualification artifact was marked <code>SUCCESSFUL</code>.</p>
 
-    <p>The other piece that made the system usable was prioritization. Jobs were not processed <span class="term" data-term="FIFO" data-definition="First In, First Out — a queue where the oldest item gets processed first (like a checkout line at a store).">FIFO</span>: a weighted <span class="term" data-term="Priority Queue" data-definition="A data structure that always gives you the highest-priority item first, rather than the oldest item (which is what a regular queue does)." data-wiki="https://en.wikipedia.org/wiki/Priority_queue"><code>heapq</code> priority queue</span> scored work as <code>recency_score × job_class_weight</code>, so newer and more decision-critical files rose to the top first. Once queued, independent jobs were fanned out through <span class="term" data-term="ProcessPoolExecutor" data-definition="A Python tool that runs multiple tasks simultaneously using separate CPU cores — like having multiple workers processing files in parallel."><code>ProcessPoolExecutor</code></span>, which let us scale throughput without breaking ordering guarantees inside the dependency chain.</p>
+    <p>The other piece that made the system usable was prioritization. Jobs were not processed <span class="term" data-term="FIFO" data-definition="First In, First Out: a queue where the oldest item gets processed first.">FIFO</span>: a weighted <span class="term" data-term="Priority Queue" data-definition="A data structure that processes the most urgent items first, instead of the oldest items." data-wiki="https://en.wikipedia.org/wiki/Priority_queue"><code>heapq</code> priority queue</span> scored work as <code>recency_score × job_class_weight</code>, so newer and more decision-critical files rose to the top first. Once queued, independent jobs were fanned out through <span class="term" data-term="ProcessPoolExecutor" data-definition="A Python tool that runs multiple tasks simultaneously using separate CPU cores, enabling us to have multiple workers processing files in parallel."><code>ProcessPoolExecutor</code></span>, which let us scale throughput without breaking ordering guarantees inside the dependency chain.</p>
 
     <h3>Job dependency model</h3>
     <div class="diagram-wrap">
@@ -939,7 +231,7 @@ classDiagram
     QualificationJob <.. StressRunJob : depends on
     QualificationJob <.. LongRunJob : depends on
       </div>
-      <p class="diagram-caption">Downstream analysis jobs only run after the baseline qualification artifact clears.</p>
+      <p class="diagram-caption"><strong>Fig 3.</strong> Downstream analysis jobs only run after the baseline qualification artifact clears.</p>
     </div>
 
     <details class="deep-dive">
@@ -965,7 +257,7 @@ classDiagram
 
     <div class="callout callout-why">
       <div class="callout-label">What problem are we solving?</div>
-      Sensor data is noisy. Imagine a heart monitor that occasionally shows a spike — is that a real cardiac event, or just the patient shifting in bed? We needed to automatically tell the difference in our time-series data, so researchers could focus on the events that actually mattered.
+      Sensor data is noisy. Imagine a heart monitor that occasionally shows a spike: is that a real cardiac event, or just the patient shifting in bed? We needed to automatically tell the difference in our time-series data, so researchers could focus on the events that actually mattered.
     </div>
 
     <p>Most of the time-series processing itself was classified business logic, but one technical problem was reusable: distinguishing meaningless spikes from true anomalies in traces whose ideal shape should have been mostly monotonic.</p>
@@ -973,7 +265,7 @@ classDiagram
     <p>Simple derivatives were too brittle, because local slope changes fired constantly even when the underlying profile was behaving normally. We also tried <span class="term" data-term="Savitzky–Golay filter" data-definition="A mathematical smoothing technique that reduces noise in data while preserving the overall shape of the signal." data-wiki="https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter">Savitzky-Golay smoothing</span>, which helped with denoising but still did not reliably separate nuisance spikes from the events that actually mattered.</p>
 
     <h3>The heuristic that worked</h3>
-    <p>The approach that finally held up was a layered heuristic. We first measured deviation inside a rolling window and flagged only windows whose deviation crossed a tuned threshold. Those candidate spike windows were then embedded into a 3D feature space built from the original trace axes plus the deviation signal, and clustered with <span class="term" data-term="DBSCAN" data-definition="A clustering algorithm that groups nearby data points together and marks isolated ones as outliers — used here to separate real anomalies from harmless spikes." data-wiki="https://en.wikipedia.org/wiki/DBSCAN">DBSCAN</span>, with careful tuning of <code>eps</code> (how close points need to be to form a cluster) and <code>minPts</code> (minimum number of points for a cluster). Dense regions of candidates usually corresponded to recurring spike behavior or measurement artifacts; candidates that failed to join any cluster were treated as the real anomalies worth escalating.</p>
+    <p>The approach that finally held up was a layered heuristic. We first measured deviation inside a rolling window and flagged only windows whose deviation crossed a tuned threshold. Those candidate spike windows were then embedded into a 3D feature space built from the original trace axes plus the deviation signal, and clustered with <span class="term" data-term="DBSCAN" data-definition="A clustering algorithm that groups nearby data points together and marks isolated ones as outliers. Used here to separate real anomalies from harmless spikes." data-wiki="https://en.wikipedia.org/wiki/DBSCAN">DBSCAN</span>, with careful tuning of <code>eps</code> (how close points need to be to form a cluster) and <code>minPts</code> (minimum number of points for a cluster). Dense regions of candidates usually corresponded to recurring spike behavior or measurement artifacts; candidates that failed to join any cluster were treated as the real anomalies worth escalating.</p>
 
     <div class="diagram-wrap">
       <div class="mermaid">
@@ -994,7 +286,7 @@ flowchart TD
     Cluster --> Dense
     Cluster --> True
       </div>
-      <p class="diagram-caption">Rolling-window deviation produced anomaly candidates; DBSCAN in 3D then separated recurring spike regions from truly isolated events.</p>
+      <p class="diagram-caption"><strong>Fig 4.</strong> Rolling-window deviation produced anomaly candidates; DBSCAN in 3D then separated recurring spike regions from truly isolated events.</p>
     </div>
   </div>
 
@@ -1009,18 +301,18 @@ flowchart TD
 
     <div class="callout callout-why">
       <div class="callout-label">What problem are we solving?</div>
-      All the data processing in the world is useless if the results stay buried in files on a server. This phase turned invisible processed data into interactive charts and dashboards that researchers could actually use — without freezing their browsers.
+      All the data processing in the world is useless if the results stay buried in files on a server. This phase turned invisible processed data into interactive charts and dashboards that researchers could actually use without freezing their browsers.
     </div>
 
-    <p>With data ingested and files processed into Parquet/Arrow formats, we built a web interface to replace manual plotting. An Express.js backend acts as a high-performance <span class="term" data-term="REST API" data-definition="A standard way for software systems to talk to each other over the internet using simple HTTP requests (like loading a web page, but for data)." data-wiki="https://en.wikipedia.org/wiki/REST">REST</span> proxy and cache in front of Django, with a dedicated Python microservice that reads Parquet files and returns <span class="term" data-term="Apache Arrow" data-definition="An in-memory data format designed for fast analytics. Think of it as a universal language that different tools can all understand without converting data back and forth." data-wiki="https://en.wikipedia.org/wiki/Apache_Arrow">Arrow</span> <span class="term" data-term="IPC" data-definition="Inter-Process Communication — a way for separate programs (or parts of a program) to send data to each other.">IPC</span> data as Base64.</p>
+    <p>With data ingested and files processed into Parquet/Arrow formats, we built a web interface to replace manual plotting. An Express.js backend acts as a high-performance <span class="term" data-term="REST API" data-definition="A standard way for software systems to talk to each other over the internet using simple HTTP requests, similar to loading a web page but for data." data-wiki="https://en.wikipedia.org/wiki/REST">REST</span> proxy and cache in front of Django, with a dedicated Python microservice that reads Parquet files and returns <span class="term" data-term="Apache Arrow" data-definition="An in-memory data format designed for fast analytics. Think of it as a universal language that different tools can all understand without converting data back and forth." data-wiki="https://en.wikipedia.org/wiki/Apache_Arrow">Arrow</span> <span class="term" data-term="IPC" data-definition="Inter-Process Communication: a way for separate programs (or parts of a program) to send data to each other.">IPC</span> data as Base64.</p>
 
     <p>To prevent the UI from freezing when rendering charts with millions of data points, we implemented a <span class="term" data-term="Web Worker" data-definition="A browser feature that runs code in a background thread, so heavy computation doesn't freeze the user interface." data-wiki="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API"><strong>Web Worker</strong></span> architecture: the worker receives Arrow Base64, decodes it, parses the Apache Arrow binary, transforms it into Plotly-ready JSON, and posts the traces back to the main thread, leaving the UI fully responsive throughout. Session-level caches reduced repeat fetches, and defensive UI boundaries ensured that a bad plot or malformed payload degraded locally instead of crashing the whole experience.</p>
 
     <div class="diagram-wrap">
       <div class="mermaid">
 classDiagram
-    class OverviewPage { +renders ScatterPlot carousel }
-    class ScatterPlot {
+    class OverviewPage { +rendersPlotCarousel() }
+    class PlotComponent {
         -projectDataCache
         +fetchAndCache()
         +renderPlotly()
@@ -1030,17 +322,17 @@ classDiagram
         +sendBatchRequests()
     }
     class DataWorker {
-        +receive arrow_base64
-        +decode Base64
-        +parse Apache Arrow binary
-        +transform to Plotly JSON
-        +postMessage traces
+        +receiveArrowBase64()
+        +decodeBase64()
+        +parseApacheArrowBinary()
+        +transformToPlotlyJSON()
+        +postMessageTraces()
     }
-    OverviewPage --> ScatterPlot
-    ScatterPlot --> useDataHook
+    OverviewPage --> PlotComponent
+    PlotComponent --> useDataHook
     useDataHook --> DataWorker
       </div>
-      <p class="diagram-caption">Web Worker pipeline keeps the main thread unblocked while processing million-point datasets.</p>
+      <p class="diagram-caption"><strong>Fig 5.</strong> Web Worker pipeline keeps the main thread unblocked while processing million-point datasets.</p>
     </div>
   </div>
 
@@ -1058,12 +350,12 @@ classDiagram
       What if researchers could just type a question like <em>"Which units failed the stress test last week?"</em> and get an answer, without knowing anything about databases or writing any code?
     </div>
 
-    <p>The final evolution gave researchers the ability to query their data in plain English. We built an AI agent directly into the React frontend, backed by a <strong>Dual-Loop pipeline</strong> with a self-healing <code>ActionReconciler</code> to prevent <span class="term" data-term="Hallucination" data-definition="When an AI confidently produces incorrect or fabricated information — a known failure mode of language models.">hallucinated</span> tool calls.</p>
+    <p>The final evolution gave researchers the ability to query their data in plain English. We built an AI agent directly into the React frontend, backed by a <strong>Dual-Loop pipeline</strong> with a self-healing <code>ActionReconciler</code> to prevent <span class="term" data-term="Hallucination" data-definition="When an AI confidently produces incorrect or fabricated information, a known failure mode of language models.">hallucinated</span> tool calls.</p>
 
     <details class="deep-dive">
       <summary>Deep dive: Benchmarking AI models before committing</summary>
       <div class="deep-dive-content">
-        <p>We benchmarked the <span class="term" data-term="LLM" data-definition="Large Language Model — an AI model (like ChatGPT) trained on vast amounts of text, capable of understanding and generating human language." data-wiki="https://en.wikipedia.org/wiki/Large_language_model">LLM</span> providers and models we had access to before deciding where each one fit. A separate pytest-based <span class="term" data-term="NL2SQL" data-definition="Natural Language to SQL — a technique that lets you type a question in plain English and have AI convert it into a database query automatically." data-wiki="https://en.wikipedia.org/wiki/Natural-language_interface">NL2SQL</span> harness ran structured query tasks across multiple models, checking not just whether they produced something plausible, but whether they returned parseable JSON, generated executable <span class="term" data-term="SQL" data-definition="Structured Query Language — the standard language for asking questions of a database, like 'show me all units that failed testing.'" data-wiki="https://en.wikipedia.org/wiki/SQL">SQL</span>, and matched validated reference behavior.</p>
+        <p>We benchmarked the <span class="term" data-term="LLM" data-definition="Large Language Model: An AI model (like ChatGPT) trained on vast amounts of text, capable of understanding and generating human language." data-wiki="https://en.wikipedia.org/wiki/Large_language_model">LLM</span> providers and models we had access to before deciding where each one fit. A separate pytest-based <span class="term" data-term="NL2SQL" data-definition="Natural Language to SQL: a technique that lets you type a question in plain English and have AI convert it into a database query automatically.">NL2SQL</span> harness ran structured query tasks across multiple models, checking not just whether they produced something plausible, but whether they returned parseable JSON, generated executable <span class="term" data-term="SQL" data-definition="Structured Query Language: the standard language for asking questions of a database, like 'show me all units that failed testing.'" data-wiki="https://en.wikipedia.org/wiki/SQL">SQL</span>, and matched validated reference behavior.</p>
         <p>That benchmarking changed how we used models in practice. Faster and cheaper models made sense for narrow classification work, while stronger models were reserved for heavier generation tasks. Our validation was also intentionally a little fuzzy in the right places: if a model returned a superset of columns but the row count and row values still matched the correct answer, we treated that as acceptable because the information was still right. Just as importantly, the benchmark suite made failure modes visible early: some models rambled instead of returning structured JSON, some timed out, and some generated SQL that looked reasonable but failed execution or result validation.</p>
       </div>
     </details>
@@ -1085,14 +377,14 @@ classDiagram
         +healingPass()
     }
     class AnalyzeTableEndpoint {
-        +POST chat analysis
-        +orchestrates full pipeline
+        +postChatAnalysis()
+        +orchestrateFullPipeline()
     }
     AnalyzeTableEndpoint --> IntentClassifier
     AnalyzeTableEndpoint --> MainGenerator
     AnalyzeTableEndpoint --> ActionReconciler
       </div>
-      <p class="diagram-caption">Dual-loop AI pipeline: intent classification feeds into generation, with a reconciler catching hallucinated actions before they surface.</p>
+      <p class="diagram-caption"><strong>Fig 6.</strong> Dual-loop AI pipeline: intent classification feeds into generation, with a reconciler catching hallucinated actions before they surface.</p>
     </div>
   </div>
 
@@ -1111,7 +403,7 @@ classDiagram
       </div>
       <div class="takeaway-card">
         <div class="t-title">Lineage as a first-class primitive</div>
-        <p class="t-desc">Modelling the workflow <span class="term" data-term="DAG" data-definition="Directed Acyclic Graph — a flowchart where steps connect in one direction and never loop back. Used here to track which stage of work feeds into which." data-wiki="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</span> explicitly in Postgres enabled traceability and cross-stage queries that were previously impossible.</p>
+        <p class="t-desc">Modelling the workflow <span class="term" data-term="DAG" data-definition="Directed Acyclic Graph: a flowchart where steps connect in one direction and never loop back. Used here to track which stage of work feeds into which." data-wiki="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</span> explicitly in Postgres enabled traceability and cross-stage queries that were previously impossible.</p>
       </div>
       <div class="takeaway-card">
         <div class="t-title">Priority over FIFO</div>
@@ -1119,15 +411,15 @@ classDiagram
       </div>
       <div class="takeaway-card">
         <div class="t-title">Heuristics over naive calculus</div>
-        <p class="t-desc">Rolling-window deviation plus <span class="term" data-term="DBSCAN" data-definition="A clustering algorithm that groups nearby data points together and marks isolated ones as outliers — used here to separate real anomalies from harmless spikes." data-wiki="https://en.wikipedia.org/wiki/DBSCAN">DBSCAN</span> worked better than simple derivatives when the goal was separating recurring spikes from true anomalies.</p>
+        <p class="t-desc">Rolling-window deviation plus <span class="term" data-term="DBSCAN" data-definition="A clustering algorithm that groups nearby data points together and marks isolated ones as outliers. Used here to separate real anomalies from harmless spikes." data-wiki="https://en.wikipedia.org/wiki/DBSCAN">DBSCAN</span> worked better than simple derivatives when the goal was separating recurring spikes from true anomalies.</p>
       </div>
       <div class="takeaway-card">
         <div class="t-title">Benchmark before betting</div>
-        <p class="t-desc">A pytest-based benchmark suite told us which models were dependable for classification, generation, and <span class="term" data-term="NL2SQL" data-definition="Natural Language to SQL — a technique that lets you type a question in plain English and have AI convert it into a database query automatically." data-wiki="https://en.wikipedia.org/wiki/Natural-language_interface">NL2SQL</span>, and which ones only looked convincing.</p>
+        <p class="t-desc">A pytest-based benchmark suite told us which models were dependable for classification, generation, and <span class="term" data-term="NL2SQL" data-definition="Natural Language to SQL: a technique that lets you type a question in plain English and have AI convert it into a database query automatically.">NL2SQL</span>, and which ones only looked convincing.</p>
       </div>
       <div class="takeaway-card">
         <div class="t-title">Self-healing agents</div>
-        <p class="t-desc">The Action Reconciler pattern — classify intent, generate, then verify — dramatically reduced <span class="term" data-term="Hallucination" data-definition="When an AI confidently produces incorrect or fabricated information — a known failure mode of language models.">hallucinated</span> tool calls at the <span class="term" data-term="LLM" data-definition="Large Language Model — an AI model (like ChatGPT) trained on vast amounts of text, capable of understanding and generating human language." data-wiki="https://en.wikipedia.org/wiki/Large_language_model">LLM</span> layer.</p>
+        <p class="t-desc">The Action Reconciler pattern: classify intent, generate, then verify; dramatically reduced <span class="term" data-term="Hallucination" data-definition="When an AI confidently produces incorrect or fabricated information, a known failure mode of language models.">hallucinated</span> tool calls at the <span class="term" data-term="LLM" data-definition="Large Language Model: An AI model (like ChatGPT) trained on vast amounts of text, capable of understanding and generating human language." data-wiki="https://en.wikipedia.org/wiki/Large_language_model">LLM</span> layer.</p>
       </div>
     </div>
   </div>
@@ -1142,110 +434,6 @@ classDiagram
 
 </div>
 
-<script>
-  // ─── Mermaid ───
-  mermaid.initialize({
-    startOnLoad: true,
-    theme: 'neutral',
-    themeVariables: {
-      primaryColor: '#EAF0EC',
-      primaryTextColor: '#1A1816',
-      primaryBorderColor: '#3B6D4A',
-      lineColor: '#8C877D',
-      secondaryColor: '#F9F7F3',
-      tertiaryColor: '#F2F0EB',
-      fontSize: '13px',
-      fontFamily: 'Geist, sans-serif',
-    },
-    flowchart: { curve: 'basis', padding: 20 },
-    classDiagram: { useMaxWidth: true },
-  });
-
-  // ─── Tooltip Generation ───
-  document.querySelectorAll('.term').forEach(el => {
-    const tip = document.createElement('span');
-    tip.className = 'term-tooltip';
-
-    let html = '';
-    if (el.dataset.term) {
-      html += `<div class="tooltip-title">${el.dataset.term}</div>`;
-    }
-    html += el.dataset.definition || '';
-    if (el.dataset.wiki) {
-      html += `<a class="wiki-link" href="${el.dataset.wiki}" target="_blank" rel="noopener noreferrer">→ Read more on Wikipedia</a>`;
-    }
-    tip.innerHTML = html;
-    el.appendChild(tip);
-  });
-
-  // ─── Mobile Tap Support for Tooltips ───
-  let activeTooltip = null;
-  document.addEventListener('touchstart', (e) => {
-    const term = e.target.closest('.term');
-    if (term) {
-      e.preventDefault();
-      if (activeTooltip && activeTooltip !== term) {
-        activeTooltip.classList.remove('tooltip-active');
-      }
-      term.classList.toggle('tooltip-active');
-      activeTooltip = term.classList.contains('tooltip-active') ? term : null;
-    } else {
-      if (activeTooltip) {
-        activeTooltip.classList.remove('tooltip-active');
-        activeTooltip = null;
-      }
-    }
-  });
-
-  // ─── Reading Progress Bar ───
-  const progressBar = document.getElementById('progressBar');
-  window.addEventListener('scroll', () => {
-    const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-    progressBar.style.width = progress + '%';
-  }, { passive: true });
-
-  // ─── Jump Nav Active State ───
-  const jumpNavLinks = document.querySelectorAll('.jump-nav a');
-  const sections = [
-    'section-problem', 'section-architecture', 'section-phase1',
-    'section-phase2', 'section-phase3', 'section-phase4',
-    'section-phase5', 'section-takeaways'
-  ];
-
-  function updateJumpNav() {
-    const scrollY = window.scrollY + 200;
-    let currentSection = '';
-    sections.forEach(id => {
-      const el = document.getElementById(id);
-      if (el && el.offsetTop <= scrollY) {
-        currentSection = id;
-      }
-    });
-    jumpNavLinks.forEach(link => {
-      const href = link.getAttribute('href').replace('#', '');
-      link.classList.toggle('active', href === currentSection);
-    });
-  }
-
-  window.addEventListener('scroll', updateJumpNav, { passive: true });
-  updateJumpNav();
-
-  // ─── Scroll-triggered Animations for Diagrams ───
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.style.animationPlayState = 'running';
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.15 });
-
-  document.querySelectorAll('.diagram-wrap').forEach(el => {
-    el.style.animationPlayState = 'paused';
-    observer.observe(el);
-  });
-</script>
+<script src="script.js"></script>
 </body>
 </html>
