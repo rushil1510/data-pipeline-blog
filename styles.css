@@ -29,7 +29,7 @@ body {
 
 /* — Layout — */
 .page-wrap {
-  max-width: 760px;
+  max-width: clamp(760px, 65vw, 920px);
   margin: 0 auto;
   padding: 0 24px;
 }
