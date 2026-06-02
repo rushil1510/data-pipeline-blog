@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Building an R&amp;D Data Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Jump Navigation -->
+<nav class="jump-nav" id="jumpNav">
+  <a href="#section-problem"><span class="nav-label">The Problem</span></a>
+  <a href="#section-architecture"><span class="nav-label">Architecture</span></a>
+  <a href="#section-phase1"><span class="nav-label">Phase 1 — Lineage</span></a>
+  <a href="#section-phase2"><span class="nav-label">Phase 2 — Orchestrator</span></a>
+  <a href="#section-phase3"><span class="nav-label">Phase 3 — Signal Cleanup</span></a>
+  <a href="#section-phase4"><span class="nav-label">Phase 4 — Frontend</span></a>
+  <a href="#section-phase5"><span class="nav-label">Phase 5 — AI Agent</span></a>
+  <a href="#section-takeaways"><span class="nav-label">Takeaways</span></a>
+</nav>
+
+<div class="page-wrap">
+
+  <header>
+    <h1>Architecting a next-generation R&amp;D data platform</h1>
+    <p class="subtitle">How we moved an R&amp;D centre from manual spreadsheets and file dumps to an automated data platform, without replacing a single spreadsheet.</p>
+
+  </header>
+
+  <!-- ─── Preamble ─── -->
+  <div class="preamble">
+    <div class="reading-badge"> Hover any <u>dashed-underline term</u> for a plain-English definition</div>
+    <p class="preamble-text">This post walks through how we designed and built a full-stack data platform that automatically collects, organizes, processes, and analyzes research data that was previously buried across scattered spreadsheets and shared drives. If you've ever struggled with messy shared folders, inconsistent data formats, and tedious copy-paste reporting workflows, the problems described here will feel immediately familiar; and you certainly don't need a deep engineering background to follow along.</p>
+    <div class="reading-time">⏱ ~12 min read</div>
+  </div>
+
+
+  <!-- ─── Problem ─── -->
+  <div class="section" id="section-problem">
+    <div class="section-label">01 <span>the problem</span></div>
+    <h2>Operating in the dark ages of data management</h2>
+
+    <div class="callout callout-analogy">
+      <div class="callout-label"> Think of it this way</div>
+      Imagine running a hospital where every patient record is a sticky note on someone's desk: no central filing, no backups, no way to search across patients. That was roughly the situation here, except the "patients" were experimental units and the "sticky notes" were spreadsheets.
+    </div>
+
+    <p>Before this platform, every critical R&amp;D decision flowed through a tangle of Google Sheets, offline Excel dumps, and manual chart-plotting sessions. The centre produced enormous volumes of workflow data at every stage, but none of it was searchable, connected, or versioned.</p>
+
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="num">01</div>
+        <div class="title">Google Sheets dependency</div>
+        <p class="desc">Process parameters for every stage of work lived in unstructured, manually-entered spreadsheets with no versioning or validation.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">02</div>
+        <div class="title">Data lake chaos</div>
+        <p class="desc">Time-series test data from machines was exported as <code>.xlsx</code> and synced to an offline Google Drive: no <span class="term" data-term="Schema" data-definition="The structure or blueprint of a database: which tables exist, what columns they have, and what type of data each column holds." data-wiki="https://en.wikipedia.org/wiki/Database_schema">schema</span>, no indexing, no structure to directories.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">03</div>
+        <div class="title">Manual analysis loop</div>
+        <p class="desc">Analysts manually opened <strong>hundreds</strong> of Excel files and plotted time-series graphs for every business-critical decision.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">04</div>
+        <div class="title">Organizational constraints</div>
+        <p class="desc">Proposals to migrate off Sheets or use direct network drives met consistent resistance. The platform had to work <em>around</em> the existing tools.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-why">
+      <div class="callout-label">Why does this matter?</div>
+      Every hour an analyst spent manually opening and charting spreadsheets was an hour not spent on actual R&amp;D. Without a connected view of the data, tracing a defective unit back to the process that caused the issue was nearly impossible.
+    </div>
+  </div>
+
+  <!-- ─── Architecture overview ─── -->
+  <div class="section" id="section-architecture">
+    <div class="section-label">02 <span>architecture overview</span></div>
+    <h2>The complete platform ecosystem</h2>
+    <p>Data flowed from two immovable sources, Google Sheets and a synced Google Drive, through a PostgreSQL backbone and a file-processing layer, then out through a Node.js layer to a React frontend and an AI chat agent.</p>
+
+    <div class="callout callout-analogy">
+      <div class="callout-label"> How to read this diagram</div>
+      The diagram below shows how data flows through the system. Read it top-to-bottom: data enters from Google Sheets and Google Drive at the top, gets processed and stored in the middle layers, and reaches users through a web based analysis portal and AI assistant at the bottom.
+    </div>
+
+    <div class="diagram-wrap">
+      <div class="mermaid">
+flowchart TD
+    subgraph DataSources[Data Sources]
+        GS["Google Sheets"]
+        GD["Google Drive"]
+    end
+    subgraph CoreBackend[Core Database and ORM]
+        GSPusher["Google Sheet Pusher"]
+        PG1["PostgreSQL"]
+        DjangoAPI["Django Backend API"]
+        GS -->|"Polling Ingestion"| GSPusher
+        GSPusher --> PG1
+        DjangoAPI -->|"Manages"| PG1
+    end
+    subgraph Pipeline[File Processing Pipeline]
+        LegacyOrch["Orchestrator\nregex discovery + job builder"]
+        SQLiteIdx["SQLite Job Ledger"]
+        PriorityQ["Priority Queue\nrecency x class weight"]
+        WorkerPool["ProcessPoolExecutor\nparallel workers"]
+        GD -->|"Synced xlsx discovery"| LegacyOrch
+        LegacyOrch --> SQLiteIdx
+        LegacyOrch --> PriorityQ
+        PriorityQ --> WorkerPool
+        WorkerPool -->|"status + logs"| SQLiteIdx
+    end
+    subgraph WebBackend[Node.js Services]
+        ExpressServer["Express Server"]
+        Routes["API Routes"]
+        DjangoAPI -->|"REST API"| ExpressServer
+        ExpressServer --> Routes
+    end
+    subgraph Frontend[User Interfaces]
+        ReactDash["React Dashboard"]
+        AIAgent["AI Chat Agent"]
+        Routes -->|"Arrow IPC / JSON"| ReactDash
+        Routes -->|"JSON Payloads"| AIAgent
+    end
+      </div>
+      <p class="diagram-caption"><strong>Fig 1.</strong> Polling ingestion into PostgreSQL fed the metadata layer, while an SQLite-backed orchestrator handled file discovery, priority scheduling, and parallel processing for time-series work.</p>
+    </div>
+  </div>
+
+  <!-- ─── Phase 1 ─── -->
+  <div class="section" id="section-phase1">
+    <div class="section-label">03 <span>phase 1</span></div>
+
+    <div class="phase-banner">
+      <span class="phase-num">Phase 01</span>
+      <h2 class="phase-title">The foundation: Tracking how work flows (Process lineage)</h2>
+    </div>
+
+    <div class="callout callout-why">
+      <div class="callout-label">Why does this matter?</div>
+      Without this, if a final product failed quality checks, there was no easy way to trace back through every stage it went through to find where things went wrong. Building a connected graph of every step was the key to making that possible.
+    </div>
+
+    <p>Since replacing Google Sheets wasn't an option, we built a synchronisation engine instead. Every few hours, a <strong>Google Sheet Pusher</strong> script downloads fresh CSV snapshots, compares them against the previous version, and pushes only the <span class="term" data-term="Delta" data-definition="Only the rows or values that changed between two versions, rather than re-processing everything from scratch.">delta</span> into PostgreSQL.</p>
+
+    <p><span class="term" data-term="Idempotent" data-definition="An operation that produces the same result whether you run it once or ten times. Like pressing an elevator button; pressing it again doesn't call a second elevator.">Idempotency</span> started at ingestion time. We kept consecutive versions of each CSV, hashed both, and only when those hashes diverged did we compute the set of mismatching process IDs and send targeted updates through the <span class="term" data-term="Django" data-definition="A Python web framework that handles the 'backend', the server-side logic, database connections, and API endpoints." data-wiki="https://en.wikipedia.org/wiki/Django_(web_framework)">Django</span> API. If a snapshot was unchanged, the poll became a no-op. That made scheduled syncs safe to rerun and prevented spreadsheet churn from becoming redundant database writes.</p>
+
+    <p>The <span class="term" data-term="Schema" data-definition="The structure or blueprint of a database: which tables exist, what columns they have, and what type of data each column holds." data-wiki="https://en.wikipedia.org/wiki/Database_schema">schema</span> mirrored the real workflow without forcing researchers to change how they worked. Each stage got its own table <span class="term" data-term="Inheritance" data-definition="In programming, when a new system component automatically takes on the properties and behaviors of a parent component, reducing repetitive code." data-wiki="https://en.wikipedia.org/wiki/Inheritance_(object-oriented_programming)">inheriting</span> from <code>BaseProcessModel</code>, <span class="term" data-term="Regex" data-definition="Regular Expression: A pattern-matching language for text." data-wiki="https://en.wikipedia.org/wiki/Regular_expression">regex</span> rules enforced identifier consistency on the source sheets, and a <code>LineageEdge</code> table connected every stage into a queryable <span class="term" data-term="DAG" data-definition="Directed Acyclic Graph: a flowchart where steps connect in one direction and never loop back. Used here to track which stage of work feeds into which." data-wiki="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</span> that could handle both splits and merges.</p>
+
+    <h3>Process lineage graph</h3>
+    <p>This is easier to see than to describe. The diagram below shows a simplified version of how stages connect:</p>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+graph LR
+    Intake --> Preparation
+    Preparation --> BranchA
+    Preparation --> BranchB
+    BranchA --> Assembly
+    BranchB --> Assembly
+    Assembly --> Qualification
+      </div>
+      <p class="diagram-caption"><strong>Fig 2.</strong> A simplified lineage view; the real graph spans more stages and explicitly models branch-and-merge relationships between units.</p>
+    </div>
+  </div>
+
+  <!-- ─── Phase 2 ─── -->
+  <div class="section" id="section-phase2">
+    <div class="section-label">04 <span>phase 2</span></div>
+
+    <div class="phase-banner">
+      <span class="phase-num">Phase 02</span>
+      <h2 class="phase-title">Orchestrator: Making the file lake workable</h2>
+    </div>
+
+    <div class="callout callout-analogy">
+      <div class="callout-label"> Think of it this way</div>
+      Think of this phase as building an intelligent mailroom for thousands of incoming packages (files). The mailroom knows which packages it has already opened, which ones are urgent, and can open multiple packages at once, all without losing track of anything.
+    </div>
+
+    <p>To process the <code>.xlsx</code> files sitting in an offline synced Google Drive, we enforced a <span class="term" data-term="Regex" data-definition="Regular Expression: A pattern-matching language for text." data-wiki="https://en.wikipedia.org/wiki/Regular_expression">regex</span>-based directory tree and a strict naming template for each analysis type. That turned a shapeless file dump into something the pipeline could actually search, classify, and reason about.</p>
+
+    <h3>Idempotency by construction</h3>
+    <p>The orchestrator used an <span class="term" data-term="SQLite" data-definition="A lightweight database stored as a single file, no server needed." data-wiki="https://en.wikipedia.org/wiki/SQLite">SQLite</span> <code>job_status</code> table as a ledger of every discovered file path, job type, and latest outcome. Each run first loaded the set of already-successful jobs, pulled a map of the unit IDs researchers were actively tracking, searched indexed paths for candidate files, and then filtered out any path that had already been marked successful for that job type. This made the system <span class="term" data-term="Idempotent" data-definition="An operation that produces the same result whether you run it once or ten times. Like pressing an elevator button; pressing it again doesn't call a second elevator.">idempotent</span>, safe reruns stopped being a convention and became the default behavior.</p>
+
+    <h3>Failure handling and scheduling</h3>
+    <p>The same ledger handled failure modes. Every attempt was upserted back into <code>job_status</code> with its status and logs, warnings were raised for misplaced files, and failed jobs remained eligible for later reprocessing instead of silently disappearing. A baseline qualification run acted as a <strong>gateway</strong>: downstream analysis jobs for a unit were only queued after that first qualification artifact was marked <code>SUCCESSFUL</code>.</p>
+
+    <p>The other piece that made the system usable was prioritization. Jobs were not processed <span class="term" data-term="FIFO" data-definition="First In, First Out: a queue where the oldest item gets processed first.">FIFO</span>: a weighted <span class="term" data-term="Priority Queue" data-definition="A data structure that processes the most urgent items first, instead of the oldest items." data-wiki="https://en.wikipedia.org/wiki/Priority_queue"><code>heapq</code> priority queue</span> scored work as <code>recency_score × job_class_weight</code>, so newer and more decision-critical files rose to the top first. Once queued, independent jobs were fanned out through <span class="term" data-term="ProcessPoolExecutor" data-definition="A Python tool that runs multiple tasks simultaneously using separate CPU cores, enabling us to have multiple workers processing files in parallel."><code>ProcessPoolExecutor</code></span>, which let us scale throughput without breaking ordering guarantees inside the dependency chain.</p>
+
+    <h3>Job dependency model</h3>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+classDiagram
+    class BaseJob {
+        +unit_code
+        +job_type
+        +status
+        +run()
+    }
+    class QualificationJob { +file_pattern }
+    class InitialAnalysisJob { +job_type }
+    class ComparativeRunJob { +job_type }
+    class StressRunJob { +job_type }
+    class LongRunJob { +job_type }
+    BaseJob <|-- QualificationJob
+    BaseJob <|-- InitialAnalysisJob
+    BaseJob <|-- ComparativeRunJob
+    BaseJob <|-- StressRunJob
+    BaseJob <|-- LongRunJob
+    QualificationJob <.. InitialAnalysisJob : depends on
+    QualificationJob <.. ComparativeRunJob : depends on
+    QualificationJob <.. StressRunJob : depends on
+    QualificationJob <.. LongRunJob : depends on
+      </div>
+      <p class="diagram-caption"><strong>Fig 3.</strong> Downstream analysis jobs only run after the baseline qualification artifact clears.</p>
+    </div>
+
+    <details class="deep-dive">
+      <summary>Deep dive: Why we converted files to Parquet</summary>
+      <div class="deep-dive-content">
+        <ul class="detail-list">
+          <li><strong>Cheaper downstream I/O:</strong> raw <code>.xlsx</code> parsing was expensive, repetitive, and full of workbook-level fluff we did not care about once a job had been understood, so after a successful run the orchestrator converted only the necessary columns into <span class="term" data-term="Parquet" data-definition="A file format optimized for storing large tabular datasets efficiently. Much faster to read than Excel for analytical workloads." data-wiki="https://en.wikipedia.org/wiki/Apache_Parquet">Parquet</span>.</li>
+          <li><strong>Column-oriented reads:</strong> because Parquet is built for efficient storage and retrieval, downstream routines could touch only the fields they needed instead of reparsing whole spreadsheets every time.</li>
+          <li><strong>Cleaner plotting path:</strong> our delivery layer already relied on <span class="term" data-term="Apache Arrow" data-definition="An in-memory data format designed for fast analytics. Think of it as a universal language that different tools can all understand without converting data back and forth." data-wiki="https://en.wikipedia.org/wiki/Apache_Arrow">Apache Arrow</span>, another columnar format optimized for fast scans and low-overhead transport, so serving processed series from Parquet into Arrow was a much cleaner route than going back to raw spreadsheets for every plot.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <!-- ─── Phase 3 ─── -->
+  <div class="section" id="section-phase3">
+    <div class="section-label">05 <span>phase 3</span></div>
+
+    <div class="phase-banner">
+      <span class="phase-num">Phase 03</span>
+      <h2 class="phase-title">Signal cleanup: separating spikes from real anomalies</h2>
+    </div>
+
+    <div class="callout callout-why">
+      <div class="callout-label">What problem are we solving?</div>
+      Sensor data is noisy. Imagine a heart monitor that occasionally shows a spike: is that a real cardiac event, or just the patient shifting in bed? We needed to automatically tell the difference in our time-series data, so researchers could focus on the events that actually mattered.
+    </div>
+
+    <p>Most of the time-series processing itself was classified business logic, but one technical problem was reusable: distinguishing meaningless spikes from true anomalies in traces whose ideal shape should have been mostly monotonic.</p>
+
+    <p>Simple derivatives were too brittle, because local slope changes fired constantly even when the underlying profile was behaving normally. We also tried <span class="term" data-term="Savitzky–Golay filter" data-definition="A mathematical smoothing technique that reduces noise in data while preserving the overall shape of the signal." data-wiki="https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter">Savitzky-Golay smoothing</span>, which helped with denoising but still did not reliably separate nuisance spikes from the events that actually mattered.</p>
+
+    <h3>The heuristic that worked</h3>
+    <p>The approach that finally held up was a layered heuristic. We first measured deviation inside a rolling window and flagged only windows whose deviation crossed a tuned threshold. Those candidate spike windows were then embedded into a 3D feature space built from the original trace axes plus the deviation signal, and clustered with <span class="term" data-term="DBSCAN" data-definition="A clustering algorithm that groups nearby data points together and marks isolated ones as outliers. Used here to separate real anomalies from harmless spikes." data-wiki="https://en.wikipedia.org/wiki/DBSCAN">DBSCAN</span>, with careful tuning of <code>eps</code> (how close points need to be to form a cluster) and <code>minPts</code> (minimum number of points for a cluster). Dense regions of candidates usually corresponded to recurring spike behavior or measurement artifacts; candidates that failed to join any cluster were treated as the real anomalies worth escalating.</p>
+
+    <div class="diagram-wrap">
+      <div class="mermaid">
+flowchart TD
+    Raw["Raw time-series trace"]
+    Window["Rolling-window<br/>deviation score"]
+    Gate{"Deviation above<br/>threshold?"}
+    Candidates["Candidate windows"]
+    Embed["Embed in 3D space<br/>x, y, deviation"]
+    Cluster["DBSCAN clustering<br/>tune eps + minPts"]
+    Dense["Clustered candidates<br/>recurring spike regions"]
+    True["Unclustered candidates<br/>true anomalies"]
+    Normal["Treat as normal"]
+
+    Raw --> Window --> Gate
+    Gate -- No --> Normal
+    Gate -- Yes --> Candidates --> Embed --> Cluster
+    Cluster --> Dense
+    Cluster --> True
+      </div>
+      <p class="diagram-caption"><strong>Fig 4.</strong> Rolling-window deviation produced anomaly candidates; DBSCAN in 3D then separated recurring spike regions from truly isolated events.</p>
+    </div>
+  </div>
+
+  <!-- ─── Phase 4 ─── -->
+  <div class="section" id="section-phase4">
+    <div class="section-label">06 <span>phase 4</span></div>
+
+    <div class="phase-banner">
+      <span class="phase-num">Phase 04</span>
+      <h2 class="phase-title">Presentation layer: React + Express</h2>
+    </div>
+
+    <div class="callout callout-why">
+      <div class="callout-label">What problem are we solving?</div>
+      All the data processing in the world is useless if the results stay buried in files on a server. This phase turned invisible processed data into interactive charts and dashboards that researchers could actually use without freezing their browsers.
+    </div>
+
+    <p>With data ingested and files processed into Parquet/Arrow formats, we built a web interface to replace manual plotting. An Express.js backend acts as a high-performance <span class="term" data-term="REST API" data-definition="A standard way for software systems to talk to each other over the internet using simple HTTP requests, similar to loading a web page but for data." data-wiki="https://en.wikipedia.org/wiki/REST">REST</span> proxy and cache in front of Django, with a dedicated Python microservice that reads Parquet files and returns <span class="term" data-term="Apache Arrow" data-definition="An in-memory data format designed for fast analytics. Think of it as a universal language that different tools can all understand without converting data back and forth." data-wiki="https://en.wikipedia.org/wiki/Apache_Arrow">Arrow</span> <span class="term" data-term="IPC" data-definition="Inter-Process Communication: a way for separate programs (or parts of a program) to send data to each other.">IPC</span> data as Base64.</p>
+
+    <p>To prevent the UI from freezing when rendering charts with millions of data points, we implemented a <span class="term" data-term="Web Worker" data-definition="A browser feature that runs code in a background thread, so heavy computation doesn't freeze the user interface." data-wiki="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API"><strong>Web Worker</strong></span> architecture: the worker receives Arrow Base64, decodes it, parses the Apache Arrow binary, transforms it into Plotly-ready JSON, and posts the traces back to the main thread, leaving the UI fully responsive throughout. Session-level caches reduced repeat fetches, and defensive UI boundaries ensured that a bad plot or malformed payload degraded locally instead of crashing the whole experience.</p>
+
+    <div class="diagram-wrap">
+      <div class="mermaid">
+classDiagram
+    class OverviewPage { +rendersPlotCarousel() }
+    class PlotComponent {
+        -projectDataCache
+        +fetchAndCache()
+        +renderPlotly()
+    }
+    class useDataHook {
+        +initWorker()
+        +sendBatchRequests()
+    }
+    class DataWorker {
+        +receiveArrowBase64()
+        +decodeBase64()
+        +parseApacheArrowBinary()
+        +transformToPlotlyJSON()
+        +postMessageTraces()
+    }
+    OverviewPage --> PlotComponent
+    PlotComponent --> useDataHook
+    useDataHook --> DataWorker
+      </div>
+      <p class="diagram-caption"><strong>Fig 5.</strong> Web Worker pipeline keeps the main thread unblocked while processing million-point datasets.</p>
+    </div>
+  </div>
+
+  <!-- ─── Phase 5 ─── -->
+  <div class="section" id="section-phase5">
+    <div class="section-label">07 <span>phase 5</span></div>
+
+    <div class="phase-banner">
+      <span class="phase-num">Phase 05</span>
+      <h2 class="phase-title">Injecting AI: Natural-language queries and chat agents</h2>
+    </div>
+
+    <div class="callout callout-analogy">
+      <div class="callout-label"> The big idea</div>
+      What if researchers could just type a question like <em>"Which units failed the stress test last week?"</em> and get an answer, without knowing anything about databases or writing any code?
+    </div>
+
+    <p>The final evolution gave researchers the ability to query their data in plain English. We built an AI agent directly into the React frontend, backed by a <strong>Dual-Loop pipeline</strong> with a self-healing <code>ActionReconciler</code> to prevent <span class="term" data-term="Hallucination" data-definition="When an AI confidently produces incorrect or fabricated information, a known failure mode of language models.">hallucinated</span> tool calls.</p>
+
+    <details class="deep-dive">
+      <summary>Deep dive: Benchmarking AI models before committing</summary>
+      <div class="deep-dive-content">
+        <p>We benchmarked the <span class="term" data-term="LLM" data-definition="Large Language Model: An AI model (like ChatGPT) trained on vast amounts of text, capable of understanding and generating human language." data-wiki="https://en.wikipedia.org/wiki/Large_language_model">LLM</span> providers and models we had access to before deciding where each one fit. A separate pytest-based <span class="term" data-term="NL2SQL" data-definition="Natural Language to SQL: a technique that lets you type a question in plain English and have AI convert it into a database query automatically.">NL2SQL</span> harness ran structured query tasks across multiple models, checking not just whether they produced something plausible, but whether they returned parseable JSON, generated executable <span class="term" data-term="SQL" data-definition="Structured Query Language: the standard language for asking questions of a database, like 'show me all units that failed testing.'" data-wiki="https://en.wikipedia.org/wiki/SQL">SQL</span>, and matched validated reference behavior.</p>
+        <p>That benchmarking changed how we used models in practice. Faster and cheaper models made sense for narrow classification work, while stronger models were reserved for heavier generation tasks. Our validation was also intentionally a little fuzzy in the right places: if a model returned a superset of columns but the row count and row values still matched the correct answer, we treated that as acceptable because the information was still right. Just as importantly, the benchmark suite made failure modes visible early: some models rambled instead of returning structured JSON, some timed out, and some generated SQL that looked reasonable but failed execution or result validation.</p>
+      </div>
+    </details>
+
+    <p>The reconciler detects mismatches between the intent classifier's output and the main generator's proposed actions, then runs a targeted healing pass before the response reaches the user, significantly reducing erroneous tool invocations in production.</p>
+
+    <div class="diagram-wrap">
+      <div class="mermaid">
+classDiagram
+    class ConversationState {
+        +currentUnit
+        +unitsDiscussed
+        +plotsShown
+    }
+    class IntentClassifier { +classifyIntent() }
+    class MainGenerator { +generate() }
+    class ActionReconciler {
+        +checkMismatch()
+        +healingPass()
+    }
+    class AnalyzeTableEndpoint {
+        +postChatAnalysis()
+        +orchestrateFullPipeline()
+    }
+    AnalyzeTableEndpoint --> IntentClassifier
+    AnalyzeTableEndpoint --> MainGenerator
+    AnalyzeTableEndpoint --> ActionReconciler
+      </div>
+      <p class="diagram-caption"><strong>Fig 6.</strong> Dual-loop AI pipeline: intent classification feeds into generation, with a reconciler catching hallucinated actions before they surface.</p>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ─── Takeaways ─── -->
+  <div class="section" id="section-takeaways">
+    <div class="section-label">08 <span>takeaways</span></div>
+    <h2>Working with constraints, not against them</h2>
+    <p>The core lesson: immovable organizational constraints aren't blockers — they're the design spec. Every layer of this platform was engineered around a fixed reality rather than an ideal one.</p>
+
+    <div class="takeaway-grid">
+      <div class="takeaway-card">
+        <div class="t-title">Constraint-first design</div>
+        <p class="t-desc">Hash-based CSV diffs and regex-constrained file discovery let us treat Sheets and Drive as pollable sources without forcing teams to abandon them.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="t-title">Lineage as a first-class primitive</div>
+        <p class="t-desc">Modelling the workflow <span class="term" data-term="DAG" data-definition="Directed Acyclic Graph: a flowchart where steps connect in one direction and never loop back. Used here to track which stage of work feeds into which." data-wiki="https://en.wikipedia.org/wiki/Directed_acyclic_graph">DAG</span> explicitly in Postgres enabled traceability and cross-stage queries that were previously impossible.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="t-title">Priority over FIFO</div>
+        <p class="t-desc">A recency-weighted queue plus parallel processing kept the most urgent jobs moving first without sacrificing safe reruns.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="t-title">Heuristics over naive calculus</div>
+        <p class="t-desc">Rolling-window deviation plus <span class="term" data-term="DBSCAN" data-definition="A clustering algorithm that groups nearby data points together and marks isolated ones as outliers. Used here to separate real anomalies from harmless spikes." data-wiki="https://en.wikipedia.org/wiki/DBSCAN">DBSCAN</span> worked better than simple derivatives when the goal was separating recurring spikes from true anomalies.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="t-title">Benchmark before betting</div>
+        <p class="t-desc">A pytest-based benchmark suite told us which models were dependable for classification, generation, and <span class="term" data-term="NL2SQL" data-definition="Natural Language to SQL: a technique that lets you type a question in plain English and have AI convert it into a database query automatically.">NL2SQL</span>, and which ones only looked convincing.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="t-title">Self-healing agents</div>
+        <p class="t-desc">The Action Reconciler pattern: classify intent, generate, then verify; dramatically reduced <span class="term" data-term="Hallucination" data-definition="When an AI confidently produces incorrect or fabricated information, a known failure mode of language models.">hallucinated</span> tool calls at the <span class="term" data-term="LLM" data-definition="Large Language Model: An AI model (like ChatGPT) trained on vast amounts of text, capable of understanding and generating human language." data-wiki="https://en.wikipedia.org/wiki/Large_language_model">LLM</span> layer.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="name">Rushil Mital</span>
+    <div class="links">
+      <a href="https://github.com/rushil1510" target="_blank">GitHub</a>
+      <a href="https://linkedin.com/in/rushil-mital" target="_blank">LinkedIn</a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
